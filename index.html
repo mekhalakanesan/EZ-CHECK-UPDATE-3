@@ -79,6 +79,14 @@
     .disabled-input {
         background-color: #f3f4f6 !important;
     }
+    /* --- CRITICAL FIX FOR LINK OPACITY --- */
+    /* When the parent section is disabled, target the link buttons specifically and force full opacity */
+    #calculator-core.disabled-section .link-button {
+        opacity: 1 !important; /* Force full visibility */
+        color: #1e40af !important; /* Force dark blue (Indigo-800) */
+        pointer-events: all !important; /* Ensure clickability */
+        text-decoration: underline !important;
+    }
   </style>
 </head>
 <body class="p-4 sm:p-8">
@@ -544,7 +552,12 @@
 
     // Enables/Disables all inputs in the calculator core
     function setCoreInputsDisabled(isDisabled) {
-        calculatorCore.classList.toggle('disabled-section', isDisabled);
+        // --- Core Calculator Sections (Demographics, Comorbidities, Special Population) ---
+        // These sections are fully disabled if the prerequisite is not met.
+        const sectionsToDisable = document.querySelectorAll('#calculator-core > h2, #calculator-core > div:not(#clinical-toggles-container)');
+        sectionsToDisable.forEach(section => {
+            section.classList.toggle('disabled-section', isDisabled);
+        });
 
         // Disable/Enable core inputs (Age, Weight, Height)
         coreInputs.forEach(input => {
@@ -552,18 +565,33 @@
             input.classList.toggle('disabled-input', isDisabled);
         });
 
-        // Disable/Enable all static and clinical checkboxes
-        const allCheckboxes = document.querySelectorAll('#calculator-core input[type="checkbox"]');
-        allCheckboxes.forEach(cb => {
+        // Disable/Enable all scoring checkboxes (Toggles)
+        const allScoringCheckboxes = document.querySelectorAll('#calculator-core input[type="checkbox"]');
+        allScoringCheckboxes.forEach(cb => {
             cb.disabled = isDisabled;
         });
-        
-        // Disable/Enable all links/buttons inside the core
-        const allButtons = document.querySelectorAll('#calculator-core button');
-        allButtons.forEach(btn => {
-            btn.disabled = isDisabled;
-        });
 
+        // --- Clinical Factors Section (Partial Control) ---
+        const clinicalSection = document.getElementById('clinical-toggles-container');
+        if (clinicalSection) {
+             // Disable the container for visual opacity on the scoring elements
+            clinicalSection.classList.toggle('disabled-section', isDisabled);
+        }
+
+        // --- ONLY Score-related Toggles are disabled, Links remain active and colored ---
+        const interactionButtons = document.querySelectorAll('#clinical-toggles .link-button');
+        interactionButtons.forEach(btn => {
+            // Override the inherited pointer-events: none from parent (disabled-section)
+            btn.style.pointerEvents = isDisabled ? 'all' : 'all'; 
+            
+            // Override the inherited opacity: 0.5 to make it bright
+            btn.style.opacity = '1';
+            
+            // Explicitly set the color to the link blue AND force underline
+            btn.style.color = '#1e40af'; // New dark blue hex code
+            btn.style.textDecoration = 'underline'; // Force underline
+        });
+    
         // If the core is disabled, reset visual elements dependent on score
         if (isDisabled) {
             updateIndicationStatus(0, 'NO INDICATION (Prerequisite Failed)');
@@ -597,6 +625,13 @@
     // Renders dynamic clinical factor toggles
     function renderToggles() {
       clinicalTogglesEl.innerHTML = '';
+      
+      // Wrap clinical toggles in a container for easier enabling/disabling of the whole section
+      const clinicalContainer = document.createElement('div');
+      clinicalContainer.id = 'clinical-toggles-container';
+      clinicalContainer.classList.add('space-y-3');
+      clinicalTogglesEl.appendChild(clinicalContainer);
+      
       CRITERIA_TOGGLES.forEach(item => {
         const key = item.id;
         
@@ -604,7 +639,7 @@
         const isChecked = loadState(key) === 'true';
 
         const linkButtonHtml = item.link 
-            ? `<button class="text-indigo-600 hover:text-indigo-800 text-xs font-semibold underline mt-2 block" onclick="openModal('${item.link}')">Check ${item.link === 'toxicity' ? 'Toxicity' : 'Interaction'} »</button>`
+            ? `<div class="link-container"><button class="link-button text-indigo-600 hover:text-indigo-800 text-xs font-semibold underline mt-2 block" onclick="openModal('${item.link}')">Check ${item.link === 'toxicity' ? 'Toxicity' : 'Interaction'} »</button></div>`
             : '';
 
         const html = `
@@ -621,7 +656,7 @@
             </div>
           </div>
         `;
-        clinicalTogglesEl.insertAdjacentHTML('beforeend', html);
+        clinicalContainer.insertAdjacentHTML('beforeend', html);
       });
       
       // Set up listeners for all static condition toggles and restore state
@@ -660,7 +695,7 @@
       saveState('6months', check6Months.checked);
 
       if (!prerequisiteMet) {
-          // If prerequisite is NOT met, stop calculation and disable core
+          // If prerequisite is NOT met, disable scoring but keep links active
           setCoreInputsDisabled(true);
           return; 
       }

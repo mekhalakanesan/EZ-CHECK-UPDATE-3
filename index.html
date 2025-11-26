@@ -6,11 +6,38 @@
   <!-- Tailwind CSS & Inter Font -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
+  <!-- FIREBASE CDN IMPORTS -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getFirestore, doc, getDoc, setDoc, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    
+    // Global variables provided by the execution environment
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+    
+    if (Object.keys(firebaseConfig).length !== 0) {
+      window.app = initializeApp(firebaseConfig);
+      window.db = getFirestore(window.app);
+    } else {
+      console.warn("Firebase configuration is missing. Utilization tracking is disabled.");
+      window.db = null;
+    }
+  </script>
+  <!-- END FIREBASE CDN IMPORTS -->
+  
   <style>
     body {
       font-family: 'Inter', sans-serif;
       background-color: #f7f9fb;
     }
+    /* --- NEW: Global Cursor Pointer for Clickable Areas --- */
+    /* Applies pointer cursor to all toggle rows/containers */
+    #seizure-history-gate > div,
+    #comorbidity-toggles .toggle-group-item,
+    #special-population-check > div,
+    #clinical-toggles .toggle-group {
+        cursor: pointer;
+    }
+    
     /* Custom Tailwind config for the toggle switch */
     .toggle-switch {
       transition: all 0.2s ease-in-out;
@@ -70,23 +97,21 @@
         from { opacity: 0; transform: scale(0.9); }
         to { opacity: 1; transform: scale(1); }
     }
-    /* Custom styles for the Gate */
-    .disabled-section {
-        opacity: 0.5;
+    /* Custom style for disabling non-link elements */
+    .disabled-input-text {
+        color: #9ca3af !important; /* Gray-400 */
+        cursor: not-allowed;
+    }
+    .disabled-bg {
+        background-color: #f3f4f6 !important; /* Gray-100 */
+        cursor: not-allowed;
+    }
+    .disabled-pointer {
         pointer-events: none;
-        user-select: none;
     }
-    .disabled-input {
-        background-color: #f3f4f6 !important;
-    }
-    /* --- CRITICAL FIX FOR LINK OPACITY --- */
-    /* When the parent section is disabled, target the link buttons specifically and force full opacity */
-    #calculator-core.disabled-section .link-button {
-        opacity: 1 !important; /* Force full visibility */
-        color: #1e40af !important; /* Force dark blue (Indigo-800) */
-        pointer-events: all !important; /* Ensure clickability */
-        text-decoration: underline !important;
-    }
+    /* --- CRITICAL FIX: DEFINITIVE LINK VISIBILITY --- */
+    /* Link style is applied via inline styles in JS function renderToggles now to bypass disabling */
+    
   </style>
 </head>
 <body class="p-4 sm:p-8">
@@ -110,7 +135,7 @@
       <div id="seizure-history-gate" class="space-y-3 p-3 border border-gray-200 rounded-xl bg-white shadow-sm">
         
         <!-- 1. Has breakthrough seizures? -->
-        <div class="flex justify-between items-center">
+        <div class="flex justify-between items-center" onclick="document.getElementById('check-seizure').click()">
           <label class="text-sm font-medium text-gray-700">1. Has breakthrough seizures?</label>
           <input type="checkbox" id="check-seizure" class="hidden toggle-switch-input" onchange="calculateScore()">
           <label for="check-seizure" class="relative w-12 h-6 cursor-pointer rounded-full bg-gray-300 toggle-switch toggle-switch-label">
@@ -119,7 +144,7 @@
         </div>
 
         <!-- 2. Last breakthrough seizure < 6 months? -->
-        <div class="flex justify-between items-center">
+        <div class="flex justify-between items-center" onclick="document.getElementById('check-6months').click()">
           <label class="text-sm font-medium text-gray-700">2. Last breakthrough seizure &lt; 6 months?</label>
           <input type="checkbox" id="check-6months" class="hidden toggle-switch-input" onchange="calculateScore()">
           <label for="check-6months" class="relative w-12 h-6 cursor-pointer rounded-full bg-gray-300 toggle-switch toggle-switch-label">
@@ -138,7 +163,7 @@
             <!-- Age Input -->
             <div class="input-group">
               <label for="input-age" class="block text-sm">Age (Years)</label>
-              <div class="flex items-center mt-1 bg-gray-100 rounded-lg shadow-inner">
+              <div class="flex items-center mt-1 bg-gray-100 rounded-lg shadow-inner input-wrapper">
                 <input
                   type="number"
                   id="input-age"
@@ -156,7 +181,7 @@
             <!-- Weight Input -->
             <div class="input-group">
               <label for="input-weight" class="block text-sm">Weight (kg)</label>
-              <div class="flex items-center mt-1 bg-gray-100 rounded-lg shadow-inner">
+              <div class="flex items-center mt-1 bg-gray-100 rounded-lg shadow-inner input-wrapper">
                 <input
                   type="number"
                   id="input-weight"
@@ -173,7 +198,7 @@
             <!-- Height Input -->
             <div class="input-group">
               <label for="input-height" class="block text-sm">Height (m)</label>
-              <div class="flex items-center mt-1 bg-gray-100 rounded-lg shadow-inner">
+              <div class="flex items-center mt-1 bg-gray-100 rounded-lg shadow-inner input-wrapper">
                 <input
                   type="number"
                   id="input-height"
@@ -199,7 +224,7 @@
           <h2 class="text-lg font-bold text-indigo-700 border-b pb-2 pt-4 mb-4">2. Comorbidities</h2>
           <div id="comorbidity-toggles" class="space-y-3">
             <!-- Renal Failure (1 point) -->
-            <div class="flex justify-between items-center p-3 bg-white border rounded-xl shadow-sm border-indigo-200">
+            <div class="flex justify-between items-center p-3 bg-white border rounded-xl shadow-sm border-indigo-200 toggle-group-item" onclick="document.getElementById('check-renal').click()">
               <label class="text-sm font-medium text-gray-700">Renal Failure</label>
               <input type="checkbox" id="check-renal" class="hidden toggle-switch-input" onchange="handleToggleChange('renal')">
               <label for="check-renal" class="relative w-12 h-6 cursor-pointer rounded-full bg-gray-300 toggle-switch toggle-switch-label">
@@ -207,7 +232,7 @@
               </label>
             </div>
             <!-- Liver Failure (1 point) -->
-            <div class="flex justify-between items-center p-3 bg-white border rounded-xl shadow-sm border-indigo-200">
+            <div class="flex justify-between items-center p-3 bg-white border rounded-xl shadow-sm border-indigo-200 toggle-group-item" onclick="document.getElementById('check-liver').click()">
               <label class="text-sm font-medium text-gray-700">Liver Failure</label>
               <input type="checkbox" id="check-liver" class="hidden toggle-switch-input" onchange="handleToggleChange('liver')">
               <label for="check-liver" class="relative w-12 h-6 cursor-pointer rounded-full bg-gray-300 toggle-switch toggle-switch-label">
@@ -215,7 +240,7 @@
               </label>
             </div>
             <!-- Diabetes Mellitus (DATA COLLECTION ONLY) -->
-            <div class="flex justify-between items-center p-3 bg-gray-50 border rounded-xl shadow-sm border-gray-300">
+            <div class="flex justify-between items-center p-3 bg-gray-50 border rounded-xl shadow-sm border-gray-300 toggle-group-item" onclick="document.getElementById('check-dm').click()">
               <label class="text-sm font-medium text-gray-700">Diabetes Mellitus</label>
               <input type="checkbox" id="check-dm" class="hidden toggle-switch-input" onchange="handleToggleChange('dm')">
               <label for="check-dm" class="relative w-12 h-6 cursor-pointer rounded-full bg-gray-300 toggle-switch toggle-switch-label">
@@ -223,7 +248,7 @@
               </label>
             </div>
             <!-- Hypertension (DATA COLLECTION ONLY) -->
-            <div class="flex justify-between items-center p-3 bg-gray-50 border rounded-xl shadow-sm border-gray-300">
+            <div class="flex justify-between items-center p-3 bg-gray-50 border rounded-xl shadow-sm border-gray-300 toggle-group-item" onclick="document.getElementById('check-htn').click()">
               <label class="text-sm font-medium text-gray-700">Hypertension</label>
               <input type="checkbox" id="check-htn" class="hidden toggle-switch-input" onchange="handleToggleChange('htn')">
               <label for="check-htn" class="relative w-12 h-6 cursor-pointer rounded-full bg-gray-300 toggle-switch toggle-switch-label">
@@ -237,19 +262,19 @@
           <div id="special-population-check" class="space-y-3">
             
             <!-- Children/Adolescent (<20 years) -->
-            <div class="p-3 rounded-xl shadow-sm border border-gray-200 transition-colors duration-200" id="age-child-pop-box">
+            <div class="p-3 rounded-xl shadow-sm border border-gray-200 transition-colors duration-200 age-pop-item" id="age-child-pop-box">
                 <p class="text-sm font-medium text-gray-700">Children/Adolescent (&lt;20 years)</p>
                 <p id="age-child-pop-status" class="text-xs font-bold mt-1 text-red-500">NOT MET</p>
             </div>
 
             <!-- Elderly (≥65 years) -->
-            <div class="p-3 rounded-xl shadow-sm border border-gray-200 transition-colors duration-200" id="age-geriatric-pop-box">
+            <div class="p-3 rounded-xl shadow-sm border border-gray-200 transition-colors duration-200 age-pop-item" id="age-geriatric-pop-box">
                 <p class="text-sm font-medium text-gray-700">Elderly (&ge;65 years)</p>
                 <p id="age-geriatric-pop-status" class="text-xs font-bold mt-1 text-red-500">NOT MET</p>
             </div>
 
             <!-- Pregnancy Toggle -->
-            <div class="flex justify-between items-center p-3 bg-white border rounded-xl shadow-sm">
+            <div class="flex justify-between items-center p-3 bg-white border rounded-xl shadow-sm toggle-group-item" onclick="document.getElementById('check-pregnancy').click()">
               <label class="text-sm font-medium text-gray-700">Pregnant</label>
               <input type="checkbox" id="check-pregnancy" class="hidden toggle-switch-input" onchange="handleToggleChange('pregnancy')">
               <label for="check-pregnancy" class="relative w-12 h-6 cursor-pointer rounded-full bg-gray-300 toggle-switch toggle-switch-label">
@@ -258,7 +283,7 @@
             </div>
 
             <!-- Less than 3 months post major surgery Toggle -->
-            <div class="flex justify-between items-center p-3 bg-white border rounded-xl shadow-sm">
+            <div class="flex justify-between items-center p-3 bg-white border rounded-xl shadow-sm toggle-group-item" onclick="document.getElementById('check-surgery').click()">
                 <label class="text-sm font-medium text-gray-700">Less than 3 months post major surgery</label>
                 <input type="checkbox" id="check-surgery" class="hidden toggle-switch-input" onchange="handleToggleChange('surgery')">
                 <label for="check-surgery" class="relative w-12 h-6 cursor-pointer rounded-full bg-gray-300 toggle-switch toggle-switch-label">
@@ -293,7 +318,10 @@
         <p id="indication-text" class="text-xl font-extrabold mt-1">NO INDICATION</p>
       </div>
       <!-- COPYRIGHT UPDATED -->
-      <p class="text-xs text-gray-500 mt-4 text-center">&copy; JKWPKL&P 2025</p>
+      <div class="flex justify-between items-center text-xs text-gray-500 mt-4">
+          <p class="text-left" id="visits-display">Visits: --</p>
+          <p class="text-right">&copy; JKWPKL&P 2025</p>
+      </div>
     </footer>
 
     <!-- MODAL OVERLAY FOR DRUG CHECKERS -->
@@ -313,7 +341,44 @@
 
   </div>
 
-  <script>
+  <script type="module">
+    // Import necessary Firebase modules
+    import { doc, getDoc, setDoc, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    
+    // Global variable setup (defined in the initial script import block)
+    const db = window.db; 
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+    // --- FIREBASE UTILIZATION TRACKING ---
+    async function trackUtilization() {
+        if (!db) {
+            console.warn("Database not available for utilization tracking.");
+            return;
+        }
+
+        try {
+            // Document path: /artifacts/{appId}/public/data/usage_stats
+            const visitsRef = doc(db, `/artifacts/${appId}/public/data/usage_stats`, 'epilepsy_ez_check_visits');
+            
+            // Atomically increment the 'visits' field
+            await setDoc(visitsRef, { 
+                visits: increment(1),
+                last_visit: new Date().toISOString()
+            }, { merge: true });
+
+            // Fetch the updated count to display
+            const docSnap = await getDoc(visitsRef);
+            if (docSnap.exists()) {
+                const count = docSnap.data().visits || 0;
+                document.getElementById('visits-display').textContent = `Visits: ${count.toLocaleString()}`;
+            }
+
+        } catch (error) {
+            console.error("Error tracking utilization:", error);
+        }
+    }
+    // END FIREBASE UTILIZATION TRACKING
+
     // --- DATA STRUCTURES (Extracted from PDF Page 2) ---
     const ASM_OPTIONS = ["VALPROIC ACID", "CARBAMAZEPINE", "PHENYTOIN", "PHENOBARBITONE"];
     const REFERENCE_CITATION = "Clinical Pharmacokinetics Pharmacy Handbook. 2nd Edition.";
@@ -545,24 +610,39 @@
 
 
     // --- Utility Functions ---
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
     const getStorageKey = (id) => `${appId}-calc-${id}`;
     const loadState = (id) => localStorage.getItem(getStorageKey(id));
     const saveState = (id, value) => localStorage.setItem(getStorageKey(id), value);
 
     // Enables/Disables all inputs in the calculator core
     function setCoreInputsDisabled(isDisabled) {
-        // --- Core Calculator Sections (Demographics, Comorbidities, Special Population) ---
-        // These sections are fully disabled if the prerequisite is not met.
-        const sectionsToDisable = document.querySelectorAll('#calculator-core > h2, #calculator-core > div:not(#clinical-toggles-container)');
-        sectionsToDisable.forEach(section => {
-            section.classList.toggle('disabled-section', isDisabled);
+        const coreDiv = document.getElementById('calculator-core');
+        if (!coreDiv) return;
+
+        // Apply general functional disable/enable
+        coreDiv.classList.toggle('disabled-pointer', isDisabled);
+        
+        // Target all toggle group items and apply visual disabling classes
+        const toggleGroupItems = document.querySelectorAll('#calculator-core .toggle-group-item, #calculator-core .age-pop-item');
+        toggleGroupItems.forEach(item => {
+            item.classList.toggle('disabled-bg', isDisabled);
+            item.classList.toggle('disabled-input-text', isDisabled);
         });
 
+        // Target all score-related labels and inputs
+        const allLabels = document.querySelectorAll('#calculator-core label, #calculator-core .text-sm, #calculator-core .text-xs, #calculator-core .text-3xl');
+        allLabels.forEach(label => {
+            // Do NOT apply this to the final BMI text, but everything else that provides context
+            if (label.id !== 'calculated-bmi') { 
+                label.classList.toggle('disabled-input-text', isDisabled);
+            }
+        });
+        
         // Disable/Enable core inputs (Age, Weight, Height)
         coreInputs.forEach(input => {
             input.disabled = isDisabled;
-            input.classList.toggle('disabled-input', isDisabled);
+            input.classList.toggle('disabled-bg', isDisabled);
+            input.classList.toggle('disabled-input-text', isDisabled);
         });
 
         // Disable/Enable all scoring checkboxes (Toggles)
@@ -571,25 +651,12 @@
             cb.disabled = isDisabled;
         });
 
-        // --- Clinical Factors Section (Partial Control) ---
-        const clinicalSection = document.getElementById('clinical-toggles-container');
-        if (clinicalSection) {
-             // Disable the container for visual opacity on the scoring elements
-            clinicalSection.classList.toggle('disabled-section', isDisabled);
-        }
-
-        // --- ONLY Score-related Toggles are disabled, Links remain active and colored ---
-        const interactionButtons = document.querySelectorAll('#clinical-toggles .link-button');
+        // --- Critical Link Fix: Ensure opacity and color are forced on active links ---
+        // The CSS rule in <style> handles the appearance, we only ensure the pointer is allowed.
+        const interactionButtons = document.querySelectorAll('#calculator-core .link-button');
         interactionButtons.forEach(btn => {
-            // Override the inherited pointer-events: none from parent (disabled-section)
-            btn.style.pointerEvents = isDisabled ? 'all' : 'all'; 
-            
-            // Override the inherited opacity: 0.5 to make it bright
-            btn.style.opacity = '1';
-            
-            // Explicitly set the color to the link blue AND force underline
-            btn.style.color = '#1e40af'; // New dark blue hex code
-            btn.style.textDecoration = 'underline'; // Force underline
+            // Set pointer events to allow clicking regardless of disabled state
+            btn.style.pointerEvents = isDisabled ? 'all' : '';
         });
     
         // If the core is disabled, reset visual elements dependent on score
@@ -601,7 +668,7 @@
     // Calculates BMI (kg/m^2) and updates the display
     function getCalculatedBMI() {
         const weight = parseFloat(inputWeight.value);
-        const height = parseFloat(inputHeight.value);
+        const height = parseFloat(inputHeight.height);
         let calculatedBMI = 0;
         
         if (weight > 0 && height > 0) {
@@ -638,8 +705,10 @@
         // Restore state
         const isChecked = loadState(key) === 'true';
 
+        // NOTE: The link element uses the preferred P tag structure you provided
+        // APPLYING PITCH BLACK COLOR AND POINTER CURSOR DIRECTLY INLINE
         const linkButtonHtml = item.link 
-            ? `<div class="link-container"><button class="link-button text-indigo-600 hover:text-indigo-800 text-xs font-semibold underline mt-2 block" onclick="openModal('${item.link}')">Check ${item.link === 'toxicity' ? 'Toxicity' : 'Interaction'} »</button></div>`
+            ? `<p class="link-button font-semibold text-xs underline mt-2" onclick="openModal('${item.link}')" style="color: #000000 !important; cursor: pointer;">Check ${item.link === 'toxicity' ? 'Toxicity' : 'Interaction'} »</p>`
             : '';
 
         const html = `
@@ -793,6 +862,9 @@
 
       // 3. Initial calculation with restored state
       calculateScore();
+      
+      // 4. Start Firebase Utilization Tracking
+      trackUtilization();
     };
 
     // Expose functions to the global scope for onchange/oninput events and modal functions

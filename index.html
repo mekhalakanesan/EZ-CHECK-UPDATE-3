@@ -3,54 +3,72 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>EPILEPSY EZ CHECK | JKWPKL&P</title>
+  
   <!-- Tailwind CSS & Inter Font -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
-  <!-- FIREBASE CDN IMPORTS -->
+  
+  <!-- FIREBASE IMPORTS -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getFirestore, doc, getDoc, setDoc, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
     
-    // Global variables provided by the execution environment
-    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+    // --- CONFIGURATION SECTION ---
     
-    if (Object.keys(firebaseConfig).length !== 0) {
-      window.app = initializeApp(firebaseConfig);
+    // 1. FOR GITHUB HOSTING: Paste your Firebase Config object inside the brackets below.
+    const GITHUB_FIREBASE_CONFIG = {}; // USER MUST PASTE CONFIG HERE IF NOT USING CANVAS
+    
+    // 2. LOGIC: Use Environment config (if in AI preview) OR User config (if on GitHub)
+    const envConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+    const finalConfig = Object.keys(envConfig).length > 0 ? envConfig : GITHUB_FIREBASE_CONFIG;
+    
+    // 3. INITIALIZE
+    if (Object.keys(finalConfig).length > 0 && finalConfig.projectId) {
+      window.app = initializeApp(finalConfig);
       window.db = getFirestore(window.app);
+      console.log("Firebase initialized successfully.");
     } else {
-      console.warn("Firebase configuration is missing. Utilization tracking is disabled.");
+      console.warn("Firebase configuration missing. 'Visits' counter will not work on GitHub unless you edit the GITHUB_FIREBASE_CONFIG section in the code.");
       window.db = null;
     }
   </script>
-  <!-- END FIREBASE CDN IMPORTS -->
   
   <style>
     body {
       font-family: 'Inter', sans-serif;
       background-color: #f7f9fb;
     }
-    /* --- NEW: Global Cursor Pointer for Clickable Areas --- */
-    /* Applies pointer cursor to all toggle rows/containers */
-    #seizure-history-gate > div,
-    #comorbidity-toggles .toggle-group-item,
-    #special-population-check > div,
-    #clinical-toggles .toggle-group {
+    
+    /* --- NATIVE TOGGLE STYLING (Robust & Clickable) --- */
+    /* Hide the actual checkbox input */
+    .toggle-checkbox {
+        position: absolute;
+        opacity: 0;
         cursor: pointer;
+        height: 0;
+        width: 0;
     }
     
-    /* Custom Tailwind config for the toggle switch */
-    .toggle-switch {
-      transition: all 0.2s ease-in-out;
+    /* The Label becomes the clickable row. 
+       When the input (sibling) is checked, we style the children of the label */
+    .toggle-checkbox:checked + label .switch-bg {
+        background-color: #10b981; /* Green-500 */
     }
-    .toggle-switch:checked {
-      @apply bg-green-500;
+    .toggle-checkbox:checked + label .switch-dot {
+        transform: translateX(100%);
     }
-    .toggle-switch:checked + .slider {
-      transform: translateX(100%);
+    
+    /* Default Switch State */
+    .switch-bg {
+        transition: background-color 0.2s ease-in-out;
+        background-color: #e5e7eb; /* Gray-200 */
     }
-    .slider {
-      transition: transform 0.2s ease-in-out;
+    .switch-dot {
+        transition: transform 0.2s ease-in-out;
+        transform: translateX(0);
     }
+
+    /* Inputs */
     .input-field {
         border: none;
         border-radius: 0.5rem;
@@ -58,328 +76,337 @@
         text-align: right;
         font-weight: 700;
         color: #1e3a8a; /* Indigo-800 */
-        transition: border-color 0.2s;
+        background: transparent;
+        width: 100%;
+        outline: none;
     }
-    .input-group label {
-        font-weight: 600;
-        color: #4b5563; /* Gray-600 */
+    .input-wrapper {
+        transition: ring 0.2s;
     }
-    .toggle-switch-label {
-        background-color: #e5e7eb; /* bg-gray-200 for unchecked state */
+    .input-wrapper:focus-within {
+        ring: 2px;
+        ring-color: #6366f1; /* Indigo-500 */
     }
-    .toggle-switch-input:checked + .toggle-switch-label {
-        background-color: #10b981; /* bg-green-500 for checked state */
-    }
-    /* Modal styles */
+
+    /* Modal */
     .modal-overlay {
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
+        top: 0; left: 0; width: 100%; height: 100%;
         background: rgba(0, 0, 0, 0.7);
         display: none;
-        justify-content: center;
-        align-items: center;
+        justify-content: center; align-items: center;
         z-index: 50;
+        backdrop-filter: blur(2px);
     }
     .modal-content {
         background: white;
         padding: 1.5rem;
         border-radius: 1rem;
-        width: 90%;
-        max-width: 600px;
-        max-height: 90vh;
+        width: 90%; max-width: 600px; max-height: 90vh;
         overflow-y: auto;
-        animation: fadeIn 0.3s ease-out;
+        animation: scaleUp 0.2s ease-out;
     }
-    @keyframes fadeIn {
-        from { opacity: 0; transform: scale(0.9); }
-        to { opacity: 1; transform: scale(1); }
+    @keyframes scaleUp {
+        from { transform: scale(0.95); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
     }
-    /* Custom style for disabling non-link elements */
-    .disabled-input-text {
-        color: #9ca3af !important; /* Gray-400 */
-        cursor: not-allowed;
-    }
-    .disabled-bg {
-        background-color: #f3f4f6 !important; /* Gray-100 */
-        cursor: not-allowed;
-    }
-    .disabled-pointer {
+
+    /* Disabled States */
+    .disabled-area {
+        opacity: 0.5;
         pointer-events: none;
+        filter: grayscale(100%);
     }
-    /* --- CRITICAL FIX: DEFINITIVE LINK VISIBILITY --- */
-    /* Link style is applied via inline styles in JS function renderToggles now to bypass disabling */
+    /* Force Links to remain clickable and visible */
+    .link-button {
+        color: #000000 !important; /* PITCH BLACK */
+        cursor: pointer !important; 
+        opacity: 1 !important; /* Force full visibility */
+        pointer-events: all !important; /* Ensure it's clickable */
+    }
     
   </style>
 </head>
 <body class="p-4 sm:p-8">
-  <div id="app" class="max-w-md mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden">
+  <div id="app" class="max-w-md mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden mb-10">
+    
     <!-- Header -->
-    <header class="p-6 bg-indigo-700 text-white">
-      <h1 class="text-2xl font-extrabold text-center">EPILEPSY EZ CHECK</h1>
-      <p class="text-sm text-center mt-1 opacity-80">
-        TDM Indication Score Calculator
-      </p>
-      <p class="text-xs text-center mt-1 opacity-60">
-        JKWPKL&P
-      </p>
+    <header class="p-6 bg-indigo-700 text-white relative overflow-hidden">
+      <div class="relative z-10">
+        <h1 class="text-2xl font-extrabold text-center tracking-tight">EPILEPSY EZ CHECK</h1>
+        <p class="text-sm text-center mt-1 text-indigo-100 font-medium">
+            TDM Indication Score Calculator
+        </p>
+        <p class="text-xs text-center mt-1 opacity-60 tracking-widest">
+            JKWPKL&P
+        </p>
+      </div>
+      <!-- Decorative circle -->
+      <div class="absolute -top-10 -right-10 w-32 h-32 bg-indigo-600 rounded-full opacity-50"></div>
     </header>
+
+    <!-- DISCLAIMER -->
+    <div class="p-4 mx-6 mt-6 rounded-lg">
+        <p class="text-xs italic text-gray-500 text-center">
+            This tool is meant to support, not replace, clinical judgment.
+        </p>
+    </div>
 
     <!-- Inputs & Toggles Section -->
     <main class="p-6 space-y-6">
         
-      <!-- UPDATED SECTION: Seizure History Gate (Now styled like other sections) -->
-      <h2 class="text-lg font-bold text-indigo-700 border-b pb-2 mb-4">SEIZURE HISTORY</h2>
+      <!-- SEIZURE HISTORY (Gatekeeper) -->
+      <h2 class="text-lg font-bold text-indigo-700 border-b pb-2 mb-2 flex items-center gap-2">
+          SEIZURE HISTORY
+      </h2>
       <div id="seizure-history-gate" class="space-y-3 p-3 border border-gray-200 rounded-xl bg-white shadow-sm">
         
         <!-- 1. Has breakthrough seizures? -->
-        <div class="flex justify-between items-center" onclick="document.getElementById('check-seizure').click()">
-          <label class="text-sm font-medium text-gray-700">1. Has breakthrough seizures?</label>
-          <input type="checkbox" id="check-seizure" class="hidden toggle-switch-input" onchange="calculateScore()">
-          <label for="check-seizure" class="relative w-12 h-6 cursor-pointer rounded-full bg-gray-300 toggle-switch toggle-switch-label">
-            <span class="absolute w-5 h-5 bg-white rounded-full shadow-md slider top-0.5 left-0.5"></span>
-          </label>
+        <div class="relative w-full">
+            <input type="checkbox" id="check-seizure" class="toggle-checkbox" onchange="calculateScore()">
+            <label for="check-seizure" class="flex justify-between items-center w-full cursor-pointer select-none">
+                <span class="text-sm font-medium text-gray-700">1. Has breakthrough seizures?</span>
+                <div class="relative w-12 h-6 rounded-full switch-bg">
+                    <div class="absolute w-5 h-5 bg-white rounded-full shadow top-0.5 left-0.5 switch-dot"></div>
+                </div>
+            </label>
         </div>
 
         <!-- 2. Last breakthrough seizure < 6 months? -->
-        <div class="flex justify-between items-center" onclick="document.getElementById('check-6months').click()">
-          <label class="text-sm font-medium text-gray-700">2. Last breakthrough seizure &lt; 6 months?</label>
-          <input type="checkbox" id="check-6months" class="hidden toggle-switch-input" onchange="calculateScore()">
-          <label for="check-6months" class="relative w-12 h-6 cursor-pointer rounded-full bg-gray-300 toggle-switch toggle-switch-label">
-            <span class="absolute w-5 h-5 bg-white rounded-full shadow-md slider top-0.5 left-0.5"></span>
-          </label>
+        <div class="relative w-full border-t border-gray-100 pt-3">
+            <input type="checkbox" id="check-6months" class="toggle-checkbox" onchange="calculateScore()">
+            <label for="check-6months" class="flex justify-between items-center w-full cursor-pointer select-none">
+                <span class="text-sm font-medium text-gray-700">2. Seizure &lt; 6 months ago?</span>
+                <div class="relative w-12 h-6 rounded-full switch-bg">
+                    <div class="absolute w-5 h-5 bg-white rounded-full shadow top-0.5 left-0.5 switch-dot"></div>
+                </div>
+            </label>
         </div>
-        <p class="text-xs italic text-gray-500 pt-2 border-t border-gray-200">Both must be YES to enable TDM scoring.</p>
+        
+        <p class="text-xs italic text-gray-400 pt-1 text-center">Both must be YES to enable TDM scoring.</p>
       </div>
       
-      <!-- CALCULATOR CORE STARTS HERE (Will be Disabled if Gate Fails) -->
-      <div id="calculator-core">
-          <!-- 1. Demographic Inputs & BMI Calculation -->
-          <h2 class="text-lg font-bold text-indigo-700 border-b pb-2 mb-4">1. Demographic & Calculated BMI</h2>
+      <!-- CALCULATOR CORE (Will be visually disabled if Gate Fails) -->
+      <div id="calculator-core" class="transition-opacity duration-300">
+          
+          <!-- 1. Demographic Inputs -->
+          <h2 class="text-lg font-bold text-indigo-700 border-b pb-2 mb-4 mt-6">1. Demographics & BMI</h2>
 
           <div class="grid grid-cols-2 gap-4">
             <!-- Age Input -->
             <div class="input-group">
-              <label for="input-age" class="block text-sm">Age (Years)</label>
-              <div class="flex items-center mt-1 bg-gray-100 rounded-lg shadow-inner input-wrapper">
-                <input
-                  type="number"
-                  id="input-age"
-                  min="0"
-                  max="150"
-                  step="1"
-                  placeholder="e.g. 35"
-                  class="input-field w-full bg-transparent"
-                  oninput="calculateScore()"
-                />
-                <span class="mr-3 text-gray-500 font-medium text-sm">yr</span>
+              <label for="input-age" class="block text-xs font-bold uppercase text-gray-500 mb-1">Age</label>
+              <div class="flex items-center bg-gray-50 rounded-lg border border-gray-200 input-wrapper">
+                <input type="number" id="input-age" min="0" max="150" placeholder="0" class="input-field" oninput="calculateScore()">
+                <span class="mr-3 text-gray-400 font-medium text-xs">yr</span>
               </div>
             </div>
 
             <!-- Weight Input -->
             <div class="input-group">
-              <label for="input-weight" class="block text-sm">Weight (kg)</label>
-              <div class="flex items-center mt-1 bg-gray-100 rounded-lg shadow-inner input-wrapper">
-                <input
-                  type="number"
-                  id="input-weight"
-                  min="1"
-                  step="0.1"
-                  placeholder="e.g. 70.0"
-                  class="input-field w-full bg-transparent"
-                  oninput="calculateScore()"
-                />
-                <span class="mr-3 text-gray-500 font-medium text-sm">kg</span>
+              <label for="input-weight" class="block text-xs font-bold uppercase text-gray-500 mb-1">Weight</label>
+              <div class="flex items-center bg-gray-50 rounded-lg border border-gray-200 input-wrapper">
+                <input type="number" id="input-weight" min="1" step="0.1" placeholder="0.0" class="input-field" oninput="calculateScore()">
+                <span class="mr-3 text-gray-400 font-medium text-xs">kg</span>
               </div>
             </div>
             
             <!-- Height Input -->
             <div class="input-group">
-              <label for="input-height" class="block text-sm">Height (m)</label>
-              <div class="flex items-center mt-1 bg-gray-100 rounded-lg shadow-inner input-wrapper">
-                <input
-                  type="number"
-                  id="input-height"
-                  min="0.1"
-                  step="0.01"
-                  placeholder="e.g. 1.75"
-                  class="input-field w-full bg-transparent"
-                  oninput="calculateScore()"
-                />
-                <span class="mr-3 text-gray-500 font-medium text-sm">m</span>
+              <label for="input-height" class="block text-xs font-bold uppercase text-gray-500 mb-1">Height</label>
+              <div class="flex items-center bg-gray-50 rounded-lg border border-gray-200 input-wrapper">
+                <input type="number" id="input-height" min="0.1" step="0.01" placeholder="0.00" class="input-field" oninput="calculateScore()">
+                <span class="mr-3 text-gray-400 font-medium text-xs">m</span>
               </div>
             </div>
           </div>
 
           <!-- Calculated BMI Display -->
-          <div class="mt-4 p-4 rounded-xl text-center bg-indigo-50 border border-indigo-200 shadow-md">
-              <p class="text-sm font-semibold text-indigo-600">Calculated BMI (kg/m²)</p>
-              <p id="calculated-bmi" class="text-3xl font-extrabold text-indigo-800 mt-0">--</p>
-              <p id="bmi-status" class="text-sm font-medium mt-1 text-gray-500 h-4"></p>
+          <div class="mt-4 p-4 rounded-xl text-center bg-indigo-50 border border-indigo-200 shadow-sm">
+              <p class="text-xs font-bold text-indigo-400 uppercase tracking-widest">BMI (kg/m²)</p>
+              <p id="calculated-bmi" class="text-3xl font-black text-gray-300 mt-1">--</p>
+              <p id="bmi-status" class="text-xs font-bold mt-1 text-gray-400 h-4"></p>
           </div>
 
           <!-- 2. Comorbidities -->
-          <h2 class="text-lg font-bold text-indigo-700 border-b pb-2 pt-4 mb-4">2. Comorbidities</h2>
+          <h2 class="text-lg font-bold text-indigo-700 border-b pb-2 mb-4 mt-6">2. Comorbidities</h2>
           <div id="comorbidity-toggles" class="space-y-3">
-            <!-- Renal Failure (1 point) -->
-            <div class="flex justify-between items-center p-3 bg-white border rounded-xl shadow-sm border-indigo-200 toggle-group-item" onclick="document.getElementById('check-renal').click()">
-              <label class="text-sm font-medium text-gray-700">Renal Failure</label>
-              <input type="checkbox" id="check-renal" class="hidden toggle-switch-input" onchange="handleToggleChange('renal')">
-              <label for="check-renal" class="relative w-12 h-6 cursor-pointer rounded-full bg-gray-300 toggle-switch toggle-switch-label">
-                <span class="absolute w-5 h-5 bg-white rounded-full shadow-md slider top-0.5 left-0.5"></span>
-              </label>
+            
+            <!-- Renal -->
+            <div class="relative w-full bg-white border rounded-xl shadow-sm p-3">
+                <input type="checkbox" id="check-renal" class="toggle-checkbox" onchange="handleToggleChange('renal')">
+                <label for="check-renal" class="flex justify-between items-center w-full cursor-pointer select-none">
+                    <span class="text-sm font-medium text-gray-700">Renal Failure</span>
+                    <div class="relative w-12 h-6 rounded-full switch-bg">
+                        <div class="absolute w-5 h-5 bg-white rounded-full shadow top-0.5 left-0.5 switch-dot"></div>
+                    </div>
+                </label>
             </div>
-            <!-- Liver Failure (1 point) -->
-            <div class="flex justify-between items-center p-3 bg-white border rounded-xl shadow-sm border-indigo-200 toggle-group-item" onclick="document.getElementById('check-liver').click()">
-              <label class="text-sm font-medium text-gray-700">Liver Failure</label>
-              <input type="checkbox" id="check-liver" class="hidden toggle-switch-input" onchange="handleToggleChange('liver')">
-              <label for="check-liver" class="relative w-12 h-6 cursor-pointer rounded-full bg-gray-300 toggle-switch toggle-switch-label">
-                <span class="absolute w-5 h-5 bg-white rounded-full shadow-md slider top-0.5 left-0.5"></span>
-              </label>
+
+            <!-- Liver -->
+            <div class="relative w-full bg-white border rounded-xl shadow-sm p-3">
+                <input type="checkbox" id="check-liver" class="toggle-checkbox" onchange="handleToggleChange('liver')">
+                <label for="check-liver" class="flex justify-between items-center w-full cursor-pointer select-none">
+                    <span class="text-sm font-medium text-gray-700">Liver Failure</span>
+                    <div class="relative w-12 h-6 rounded-full switch-bg">
+                        <div class="absolute w-5 h-5 bg-white rounded-full shadow top-0.5 left-0.5 switch-dot"></div>
+                    </div>
+                </label>
             </div>
-            <!-- Diabetes Mellitus (DATA COLLECTION ONLY) -->
-            <div class="flex justify-between items-center p-3 bg-gray-50 border rounded-xl shadow-sm border-gray-300 toggle-group-item" onclick="document.getElementById('check-dm').click()">
-              <label class="text-sm font-medium text-gray-700">Diabetes Mellitus</label>
-              <input type="checkbox" id="check-dm" class="hidden toggle-switch-input" onchange="handleToggleChange('dm')">
-              <label for="check-dm" class="relative w-12 h-6 cursor-pointer rounded-full bg-gray-300 toggle-switch toggle-switch-label">
-                <span class="absolute w-5 h-5 bg-white rounded-full shadow-md slider top-0.5 left-0.5"></span>
-              </label>
+
+            <!-- DM (Data only) -->
+            <div class="relative w-full bg-gray-50 border border-gray-200 rounded-xl shadow-sm p-3">
+                <input type="checkbox" id="check-dm" class="toggle-checkbox" onchange="handleToggleChange('dm')">
+                <label for="check-dm" class="flex justify-between items-center w-full cursor-pointer select-none">
+                    <span class="text-sm font-medium text-gray-500">Diabetes Mellitus</span>
+                    <div class="relative w-12 h-6 rounded-full switch-bg">
+                        <div class="absolute w-5 h-5 bg-white rounded-full shadow top-0.5 left-0.5 switch-dot"></div>
+                    </div>
+                </label>
             </div>
-            <!-- Hypertension (DATA COLLECTION ONLY) -->
-            <div class="flex justify-between items-center p-3 bg-gray-50 border rounded-xl shadow-sm border-gray-300 toggle-group-item" onclick="document.getElementById('check-htn').click()">
-              <label class="text-sm font-medium text-gray-700">Hypertension</label>
-              <input type="checkbox" id="check-htn" class="hidden toggle-switch-input" onchange="handleToggleChange('htn')">
-              <label for="check-htn" class="relative w-12 h-6 cursor-pointer rounded-full bg-gray-300 toggle-switch toggle-switch-label">
-                <span class="absolute w-5 h-5 bg-white rounded-full shadow-md slider top-0.5 left-0.5"></span>
-              </label>
+
+            <!-- HTN (Data only) -->
+            <div class="relative w-full bg-gray-50 border border-gray-200 rounded-xl shadow-sm p-3">
+                <input type="checkbox" id="check-htn" class="toggle-checkbox" onchange="handleToggleChange('htn')">
+                <label for="check-htn" class="flex justify-between items-center w-full cursor-pointer select-none">
+                    <span class="text-sm font-medium text-gray-500">Hypertension</span>
+                    <div class="relative w-12 h-6 rounded-full switch-bg">
+                        <div class="absolute w-5 h-5 bg-white rounded-full shadow top-0.5 left-0.5 switch-dot"></div>
+                    </div>
+                </label>
             </div>
           </div>
           
-          <!-- 3. Special Population (Additive Scoring) -->
-          <h2 class="text-lg font-bold text-indigo-700 border-b pb-2 pt-4 mb-4">3. Special Population</h2>
+          <!-- 3. Special Population -->
+          <h2 class="text-lg font-bold text-indigo-700 border-b pb-2 pt-6 mb-4">3. Special Population</h2>
           <div id="special-population-check" class="space-y-3">
             
-            <!-- Children/Adolescent (<20 years) -->
-            <div class="p-3 rounded-xl shadow-sm border border-gray-200 transition-colors duration-200 age-pop-item" id="age-child-pop-box">
-                <p class="text-sm font-medium text-gray-700">Children/Adolescent (&lt;20 years)</p>
-                <p id="age-child-pop-status" class="text-xs font-bold mt-1 text-red-500">NOT MET</p>
+            <!-- Children -->
+            <div class="p-3 rounded-xl shadow-sm border border-gray-200 bg-gray-50" id="age-child-pop-box">
+                <div class="flex justify-between items-center">
+                    <p class="text-sm font-medium text-gray-700">Children (&lt;20 yr)</p>
+                    <p id="age-child-pop-status" class="text-xs font-black text-gray-400">NOT MET</p>
+                </div>
             </div>
 
-            <!-- Elderly (≥65 years) -->
-            <div class="p-3 rounded-xl shadow-sm border border-gray-200 transition-colors duration-200 age-pop-item" id="age-geriatric-pop-box">
-                <p class="text-sm font-medium text-gray-700">Elderly (&ge;65 years)</p>
-                <p id="age-geriatric-pop-status" class="text-xs font-bold mt-1 text-red-500">NOT MET</p>
+            <!-- Elderly -->
+            <div class="p-3 rounded-xl shadow-sm border border-gray-200 bg-gray-50" id="age-geriatric-pop-box">
+                <div class="flex justify-between items-center">
+                    <p class="text-sm font-medium text-gray-700">Elderly (&ge;65 yr)</p>
+                    <p id="age-geriatric-pop-status" class="text-xs font-black text-gray-400">NOT MET</p>
+                </div>
             </div>
 
-            <!-- Pregnancy Toggle -->
-            <div class="flex justify-between items-center p-3 bg-white border rounded-xl shadow-sm toggle-group-item" onclick="document.getElementById('check-pregnancy').click()">
-              <label class="text-sm font-medium text-gray-700">Pregnant</label>
-              <input type="checkbox" id="check-pregnancy" class="hidden toggle-switch-input" onchange="handleToggleChange('pregnancy')">
-              <label for="check-pregnancy" class="relative w-12 h-6 cursor-pointer rounded-full bg-gray-300 toggle-switch toggle-switch-label">
-                <span class="absolute w-5 h-5 bg-white rounded-full shadow-md slider top-0.5 left-0.5"></span>
-              </label>
+            <!-- Pregnant -->
+            <div class="relative w-full bg-white border rounded-xl shadow-sm p-3">
+                <input type="checkbox" id="check-pregnancy" class="toggle-checkbox" onchange="handleToggleChange('pregnancy')">
+                <label for="check-pregnancy" class="flex justify-between items-center w-full cursor-pointer select-none">
+                    <span class="text-sm font-medium text-gray-700">Pregnant</span>
+                    <div class="relative w-12 h-6 rounded-full switch-bg">
+                        <div class="absolute w-5 h-5 bg-white rounded-full shadow top-0.5 left-0.5 switch-dot"></div>
+                    </div>
+                </label>
             </div>
 
-            <!-- Less than 3 months post major surgery Toggle -->
-            <div class="flex justify-between items-center p-3 bg-white border rounded-xl shadow-sm toggle-group-item" onclick="document.getElementById('check-surgery').click()">
-                <label class="text-sm font-medium text-gray-700">Less than 3 months post major surgery</label>
-                <input type="checkbox" id="check-surgery" class="hidden toggle-switch-input" onchange="handleToggleChange('surgery')">
-                <label for="check-surgery" class="relative w-12 h-6 cursor-pointer rounded-full bg-gray-300 toggle-switch toggle-switch-label">
-                    <span class="absolute w-5 h-5 bg-white rounded-full shadow-md slider top-0.5 left-0.5"></span>
+            <!-- Surgery -->
+            <div class="relative w-full bg-white border rounded-xl shadow-sm p-3">
+                <input type="checkbox" id="check-surgery" class="toggle-checkbox" onchange="handleToggleChange('surgery')">
+                <label for="check-surgery" class="flex justify-between items-center w-full cursor-pointer select-none">
+                    <span class="text-sm font-medium text-gray-700 w-3/4">Post-Major Surgery (&lt;3mo)</span>
+                    <div class="relative w-12 h-6 rounded-full switch-bg">
+                        <div class="absolute w-5 h-5 bg-white rounded-full shadow top-0.5 left-0.5 switch-dot"></div>
+                    </div>
                 </label>
             </div>
           </div>
 
 
           <!-- 4. Clinical Factors -->
-          <h2 class="text-lg font-bold text-indigo-700 border-b pb-2 pt-4 mb-4">4. Clinical Factors</h2>
+          <h2 class="text-lg font-bold text-indigo-700 border-b pb-2 pt-6 mb-4">4. Clinical Factors</h2>
           
           <div id="clinical-toggles" class="space-y-3">
-            <!-- Toggles will be injected here by JS -->
+            <!-- Dynamic Injection -->
           </div>
       </div> <!-- END CALCULATOR CORE -->
     </main>
 
     <!-- Score Summary (Sticky Footer) -->
-    <footer id="score-footer" class="p-6 bg-gray-100 border-t-8 border-indigo-700">
+    <footer id="score-footer" class="p-6 bg-gray-50 border-t border-gray-200">
       <div class="text-center">
-        <p class="text-sm font-semibold text-gray-600">Total Positive Criteria</p>
-        <div
-          id="final-score"
-          class="text-6xl font-extrabold text-indigo-700 mt-1"
-        >
+        <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Total Positive Criteria</p>
+        <div id="final-score" class="text-6xl font-black text-gray-300 mt-1 transition-colors duration-300">
           0
         </div>
       </div>
-      <div id="indication-box" class="mt-4 p-4 rounded-xl text-center shadow-lg transition-all duration-300">
-        <p class="font-bold text-lg">TDM Indication Status</p>
-        <p id="indication-text" class="text-xl font-extrabold mt-1">NO INDICATION</p>
+      
+      <div id="indication-box" class="mt-4 p-4 rounded-xl text-center shadow-lg transition-all duration-300 bg-gray-200 text-gray-500">
+        <p class="text-xs font-bold uppercase tracking-wider mb-1">Status</p>
+        <p id="indication-text" class="text-xl font-extrabold">NO INDICATION</p>
       </div>
-      <!-- COPYRIGHT UPDATED -->
-      <div class="flex justify-between items-center text-xs text-gray-500 mt-4">
-          <p class="text-left" id="visits-display">Visits: --</p>
-          <p class="text-right">&copy; JKWPKL&P 2025</p>
+
+      <!-- VISITS & COPYRIGHT -->
+      <div class="flex justify-between items-end text-xs text-gray-400 mt-6 border-t pt-4">
+          <div>
+            <p id="visits-display" class="font-mono text-indigo-400">Visits: ...</p>
+          </div>
+          <div class="text-right">
+              <p>&copy; JKWPKL&P 2025</p>
+              <p class="text-[10px] opacity-70">v2.1 Stable</p>
+          </div>
       </div>
     </footer>
 
-    <!-- MODAL OVERLAY FOR DRUG CHECKERS -->
+    <!-- MODAL OVERLAY -->
     <div id="drug-checker-modal" class="modal-overlay" onclick="closeModal(event)">
-        <div class="modal-content">
+        <div class="modal-content shadow-2xl">
             <div class="flex justify-between items-center border-b pb-3 mb-4">
                 <h3 id="modal-title" class="text-xl font-bold text-indigo-700">Drug Checker</h3>
-                <button onclick="document.getElementById('drug-checker-modal').style.display='none';" class="text-gray-500 hover:text-gray-700 text-2xl font-light leading-none">
+                <button onclick="document.getElementById('drug-checker-modal').style.display='none';" class="text-gray-400 hover:text-red-500 text-3xl font-light leading-none focus:outline-none">
                     &times;
                 </button>
             </div>
-            <div id="modal-body">
-                <!-- Content will be rendered here -->
-            </div>
+            <div id="modal-body"></div>
         </div>
     </div>
 
   </div>
 
   <script type="module">
-    // Import necessary Firebase modules
     import { doc, getDoc, setDoc, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
     
-    // Global variable setup (defined in the initial script import block)
     const db = window.db; 
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'epilepsy-ez-check-app';
 
-    // --- FIREBASE UTILIZATION TRACKING ---
+    // --- TRACKING LOGIC ---
     async function trackUtilization() {
         if (!db) {
-            console.warn("Database not available for utilization tracking.");
+            document.getElementById('visits-display').textContent = "Visits: (No DB)";
             return;
         }
-
         try {
-            // Document path: /artifacts/{appId}/public/data/usage_stats
-            const visitsRef = doc(db, `/artifacts/${appId}/public/data/usage_stats`, 'epilepsy_ez_check_visits');
-            
-            // Atomically increment the 'visits' field
+            const statsPath = `artifacts/${appId}/public/data`;
+            const docId = 'usage_stats';
+            const visitsRef = doc(db, statsPath, docId);
+
+            // 1. Increment
             await setDoc(visitsRef, { 
-                visits: increment(1),
-                last_visit: new Date().toISOString()
+                epilepsy_tool_visits: increment(1),
+                last_access: new Date().toISOString()
             }, { merge: true });
 
-            // Fetch the updated count to display
+            // 2. Read back
             const docSnap = await getDoc(visitsRef);
             if (docSnap.exists()) {
-                const count = docSnap.data().visits || 0;
+                const count = docSnap.data().epilepsy_tool_visits || 1;
                 document.getElementById('visits-display').textContent = `Visits: ${count.toLocaleString()}`;
             }
-
         } catch (error) {
-            console.error("Error tracking utilization:", error);
+            console.error("Tracking Error:", error);
+            document.getElementById('visits-display').textContent = "Visits: --";
         }
     }
-    // END FIREBASE UTILIZATION TRACKING
 
-    // --- DATA STRUCTURES (Extracted from PDF Page 2) ---
+    // --- DATA ---
     const ASM_OPTIONS = ["VALPROIC ACID", "CARBAMAZEPINE", "PHENYTOIN", "PHENOBARBITONE"];
     const REFERENCE_CITATION = "Clinical Pharmacokinetics Pharmacy Handbook. 2nd Edition.";
 
@@ -421,7 +448,6 @@
         }
     };
 
-    // --- Data Definition for Toggles (Clinical Factors)
     const CRITERIA_TOGGLES = [
       { id: '2', text: 'Seizure occurs during sleep' },
       { id: '3', text: 'Any drug/dose changes (ASM only)' },
@@ -449,238 +475,31 @@
     const modal = document.getElementById('drug-checker-modal');
     const modalTitle = document.getElementById('modal-title');
     const modalBody = document.getElementById('modal-body');
-    
-    // Core inputs (for disabling)
     const calculatorCore = document.getElementById('calculator-core');
-    const checkSeizure = document.getElementById('check-seizure');
-    const check6Months = document.getElementById('check-6months');
-    
-    // Comorbidity elements
-    const checkRenal = document.getElementById('check-renal');
-    const checkLiver = document.getElementById('check-liver');
-    const checkDM = document.getElementById('check-dm');
-    const checkHTN = document.getElementById('check-htn');
-    const checkPregnancy = document.getElementById('check-pregnancy');
-    const checkSurgery = document.getElementById('check-surgery');
     const coreInputs = [inputAge, inputWeight, inputHeight];
 
-    // --- MODAL FUNCTIONS (maintained from previous version) ---
-    function openModal(type) {
-        if (type === 'toxicity') {
-            modalTitle.textContent = 'ASM ADR & Toxicity Checker';
-            renderToxicityChecker();
-        } else if (type === 'interaction') {
-            modalTitle.textContent = 'ASM Drug Interaction Checker';
-            renderInteractionChecker();
-        }
-        modal.style.display = 'flex';
-    }
-
-    function closeModal(event) {
-        if (event.target === modal) {
-            modal.style.display = 'none';
-        }
-    }
-    
-    function renderToxicityChecker() {
-        const optionsHtml = ASM_OPTIONS.map(drug => `<option value="${drug}">${drug}</option>`).join('');
-
-        modalBody.innerHTML = `
-            <div class="space-y-4">
-                <div class="input-group">
-                    <label for="asm-select" class="block text-sm font-medium text-gray-700 mb-1">Select Anti-Seizure Medication (ASM)</label>
-                    <select id="asm-select" onchange="updateToxicityResults(this.value)" class="w-full p-3 border border-gray-300 rounded-lg bg-white shadow-sm focus:border-indigo-500">
-                        <option value="">-- Choose ASM --</option>
-                        ${optionsHtml}
-                    </select>
-                </div>
-                
-                <div id="toxicity-results" class="p-4 bg-indigo-50 border border-indigo-200 rounded-xl space-y-3">
-                    <p class="text-gray-500 text-center">Select an ASM above to view associated Adverse Reactions and Overdose symptoms.</p>
-                </div>
-                <p class="text-xs text-gray-500 pt-2 mt-3 border-t">Reference: ${REFERENCE_CITATION}</p>
-            </div>
-        `;
-    }
-
-    function updateToxicityResults(drug) {
-        const resultsEl = document.getElementById('toxicity-results');
-        if (!drug) {
-            resultsEl.innerHTML = `<p class="text-gray-500 text-center">Select an ASM above to view associated Adverse Reactions and Overdose symptoms.</p>`;
-            return;
-        }
-
-        const data = ASM_ADR_TOXICITY[drug];
-        if (data) {
-            resultsEl.innerHTML = `
-                <div class="border-b pb-2">
-                    <p class="font-bold text-lg text-red-600">Adverse Drug Reactions (ADR)</p>
-                    <p class="text-sm text-gray-700">${data.adr.split(', ').map(item => `<span class="inline-block bg-red-100 text-red-700 rounded-full px-3 py-1 text-xs m-0.5">${item}</span>`).join('')}</p>
-                </div>
-                <div class="pt-2">
-                    <p class="font-bold text-lg text-red-600">Overdose / Toxicity Symptoms</p>
-                    <p class="text-sm text-gray-700">${data.toxicity}</p>
-                </div>
-            `;
-        }
-    }
-
-    function renderInteractionChecker() {
-        const optionsHtml = ASM_OPTIONS.map(drug => `<option value="${drug}">${drug}</option>`).join('');
-        
-        modalBody.innerHTML = `
-            <div class="space-y-4">
-                <div class="grid grid-cols-2 gap-4">
-                    <!-- Primary ASM (Dropdown) -->
-                    <div class="input-group">
-                        <label for="asm1-select" class="block text-sm font-medium text-gray-700 mb-1">Primary ASM (Index Drug)</label>
-                        <select id="asm1-select" class="w-full p-3 border border-gray-300 rounded-lg bg-white shadow-sm focus:border-indigo-500" onchange="checkInteraction()">
-                            <option value="">-- Choose ASM --</option>
-                            ${optionsHtml}
-                        </select>
-                    </div>
-
-                    <!-- Secondary Drug (Text Input) -->
-                    <div class="input-group">
-                        <label for="drug2-input" class="block text-sm font-medium text-gray-700 mb-1">Second Drug (Interacting Drug)</label>
-                        <input type="text" id="drug2-input" placeholder="e.g., Cimetidine, Rifampicin" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:border-indigo-500" oninput="checkInteraction()">
-                    </div>
-                </div>
-
-                <div id="interaction-results" class="p-4 bg-gray-100 border border-gray-300 rounded-xl">
-                    <p class="text-gray-500 text-center">Select an ASM and enter a second drug to check for interactions.</p>
-                </div>
-                <p class="text-xs text-gray-500 pt-2 mt-3 border-t">Reference: ${REFERENCE_CITATION}. <span class="text-red-600 font-semibold">Disclaimer: Always consult official drug resources for comprehensive interaction checking.</span></p>
-            </div>
-        `;
-    }
-
-    function checkInteraction() {
-        const resultsEl = document.getElementById('interaction-results');
-        const asm1 = document.getElementById('asm1-select').value;
-        const drug2 = document.getElementById('drug2-input').value.toUpperCase().trim();
-        
-        resultsEl.className = "p-4 border rounded-xl transition-all duration-200";
-
-        if (!asm1 || drug2.length < 3) {
-            resultsEl.innerHTML = `<p class="text-gray-500 text-center">Select an ASM and enter a second drug to check for interactions.</p>`;
-            resultsEl.classList.remove('bg-red-100', 'bg-green-100', 'border-red-300', 'border-green-300');
-            resultsEl.classList.add('bg-gray-100', 'border-gray-300');
-            return;
-        }
-
-        const interactions = ASM_INTERACTIONS[asm1];
-        let resultHtml = '';
-        let interactionFound = false;
-
-        // Check INCREASED BY list
-        interactions.increased_by.forEach(interactingDrug => {
-            if (drug2.includes(interactingDrug.toUpperCase().trim()) || interactingDrug.toUpperCase().trim().includes(drug2)) {
-                interactionFound = true;
-                resultHtml += `<p class="font-semibold text-red-700 mt-2">Effect: ${asm1} concentration/effects may be <span class="underline">INCREASED</span> by ${interactingDrug}.</p>`;
-            }
-        });
-
-        // Check DECREASED BY list
-        interactions.decreased_by.forEach(interactingDrug => {
-            if (drug2.includes(interactingDrug.toUpperCase().trim()) || interactingDrug.toUpperCase().trim().includes(drug2)) {
-                interactionFound = true;
-                resultHtml += `<p class="font-semibold text-red-700 mt-2">Effect: ${asm1} concentration/effects may be <span class="underline">DECREASED</span> by ${interactingDrug}.</p>`;
-            }
-        });
-
-        if (interactionFound) {
-            resultsEl.innerHTML = `
-                <p class="font-extrabold text-red-800 text-lg">THERE IS AN INTERACTION, PROCEED WITH CAUTION.</p>
-                <div class="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-                    ${resultHtml}
-                </div>
-            `;
-            resultsEl.classList.remove('bg-gray-100', 'bg-green-100', 'border-gray-300', 'border-green-300');
-            resultsEl.classList.add('bg-red-100', 'border-red-300');
-        } else {
-            resultsEl.innerHTML = `
-                <p class="font-extrabold text-green-800 text-lg">NO MAJOR INTERACTION IS FOUND</p>
-                <p class="text-sm text-gray-700 mt-2">Based on the specified TDM EZ Check reference data, no major interaction was found for ${asm1} and ${drug2}.</p>
-            `;
-            resultsEl.classList.remove('bg-gray-100', 'bg-red-100', 'border-gray-300', 'border-green-300');
-            resultsEl.classList.add('bg-green-100', 'border-green-300');
-        }
-    }
-
-
-    // --- Utility Functions ---
-    const getStorageKey = (id) => `${appId}-calc-${id}`;
+    // --- STATE MANAGEMENT ---
+    const getStorageKey = (id) => `epilepsy-ez-${id}`;
     const loadState = (id) => localStorage.getItem(getStorageKey(id));
     const saveState = (id, value) => localStorage.setItem(getStorageKey(id), value);
 
-    // Enables/Disables all inputs in the calculator core
+    // --- CORE LOGIC ---
     function setCoreInputsDisabled(isDisabled) {
         const coreDiv = document.getElementById('calculator-core');
         if (!coreDiv) return;
 
-        // Apply general functional disable/enable
-        coreDiv.classList.toggle('disabled-pointer', isDisabled);
-        
-        // Target all toggle group items and apply visual disabling classes
-        const toggleGroupItems = document.querySelectorAll('#calculator-core .toggle-group-item, #calculator-core .age-pop-item');
-        toggleGroupItems.forEach(item => {
-            item.classList.toggle('disabled-bg', isDisabled);
-            item.classList.toggle('disabled-input-text', isDisabled);
-        });
-
-        // Target all score-related labels and inputs
-        const allLabels = document.querySelectorAll('#calculator-core label, #calculator-core .text-sm, #calculator-core .text-xs, #calculator-core .text-3xl');
-        allLabels.forEach(label => {
-            // Do NOT apply this to the final BMI text, but everything else that provides context
-            if (label.id !== 'calculated-bmi') { 
-                label.classList.toggle('disabled-input-text', isDisabled);
-            }
-        });
-        
-        // Disable/Enable core inputs (Age, Weight, Height)
-        coreInputs.forEach(input => {
-            input.disabled = isDisabled;
-            input.classList.toggle('disabled-bg', isDisabled);
-            input.classList.toggle('disabled-input-text', isDisabled);
-        });
-
-        // Disable/Enable all scoring checkboxes (Toggles)
-        const allScoringCheckboxes = document.querySelectorAll('#calculator-core input[type="checkbox"]');
-        allScoringCheckboxes.forEach(cb => {
-            cb.disabled = isDisabled;
-        });
-
-        // --- Critical Link Fix: Ensure opacity and color are forced on active links ---
-        // The CSS rule in <style> handles the appearance, we only ensure the pointer is allowed.
-        const interactionButtons = document.querySelectorAll('#calculator-core .link-button');
-        interactionButtons.forEach(btn => {
-            // Set pointer events to allow clicking regardless of disabled state
-            btn.style.pointerEvents = isDisabled ? 'all' : '';
-        });
-    
-        // If the core is disabled, reset visual elements dependent on score
         if (isDisabled) {
+            coreDiv.classList.add('disabled-area');
             updateIndicationStatus(0, 'NO INDICATION (Prerequisite Failed)');
-        }
-    }
-
-    // Calculates BMI (kg/m^2) and updates the display
-    function getCalculatedBMI() {
-        const weight = parseFloat(inputWeight.value);
-        const height = parseFloat(inputHeight.height);
-        let calculatedBMI = 0;
-        
-        if (weight > 0 && height > 0) {
-            calculatedBMI = weight / (height * height);
-            calculatedBmiEl.textContent = calculatedBMI.toFixed(1);
         } else {
-            calculatedBmiEl.textContent = '--';
+            coreDiv.classList.remove('disabled-area');
         }
-        return calculatedBMI;
+        
+        // Ensure links remain clickable even when disabled, if needed
+        const links = coreDiv.querySelectorAll('.link-button');
+        links.forEach(l => l.classList.toggle('force-pointer', isDisabled));
     }
 
-    // Handles toggle state change for factors and saves to storage
     function handleToggleChange(id) {
         const checkbox = document.getElementById(`check-${id}`);
         if (checkbox) { 
@@ -688,192 +507,265 @@
         }
         calculateScore();
     }
-    
-    // Renders dynamic clinical factor toggles
+
+    // --- HTML RENDERER FOR DYNAMIC TOGGLES ---
     function renderToggles() {
       clinicalTogglesEl.innerHTML = '';
       
-      // Wrap clinical toggles in a container for easier enabling/disabling of the whole section
-      const clinicalContainer = document.createElement('div');
-      clinicalContainer.id = 'clinical-toggles-container';
-      clinicalContainer.classList.add('space-y-3');
-      clinicalTogglesEl.appendChild(clinicalContainer);
-      
       CRITERIA_TOGGLES.forEach(item => {
         const key = item.id;
-        
-        // Restore state
         const isChecked = loadState(key) === 'true';
 
-        // NOTE: The link element uses the preferred P tag structure you provided
-        // APPLYING PITCH BLACK COLOR AND POINTER CURSOR DIRECTLY INLINE
+        // Styling for the link if present
         const linkButtonHtml = item.link 
-            ? `<p class="link-button font-semibold text-xs underline mt-2" onclick="openModal('${item.link}')" style="color: #000000 !important; cursor: pointer;">Check ${item.link === 'toxicity' ? 'Toxicity' : 'Interaction'} »</p>`
+            ? `<div class="mt-1"><button class="link-button text-xs font-bold text-indigo-600 hover:text-indigo-800 underline focus:outline-none" onclick="openModal('${item.link}')">Check ${item.link === 'toxicity' ? 'Toxicity' : 'Interaction'} &raquo;</button></div>`
             : '';
 
+        // NATIVE HTML TOGGLE STRUCTURE
         const html = `
-          <div class="p-3 bg-white border rounded-xl shadow-sm toggle-group">
-            <div class="flex justify-between items-start">
+          <div class="relative w-full bg-white border rounded-xl shadow-sm p-3">
+            <input type="checkbox" id="check-${key}" class="toggle-checkbox" onchange="handleToggleChange('${key}')" ${isChecked ? 'checked' : ''}>
+            <label for="check-${key}" class="flex justify-between items-start w-full cursor-pointer select-none">
                 <div class="flex-1 mr-4">
-                    <label for="check-${key}" class="text-sm font-medium text-gray-700">${item.text}</label>
-                    ${linkButtonHtml}
+                    <span class="text-sm font-medium text-gray-700 block">${item.text}</span>
+                    <div class="relative z-20 pointer-events-auto" onclick="event.stopPropagation()">
+                        ${linkButtonHtml} 
+                    </div>
                 </div>
-                <input type="checkbox" id="check-${key}" class="hidden toggle-switch-input" onchange="handleToggleChange('${key}')" ${isChecked ? 'checked' : ''}>
-                <label for="check-${key}" class="relative w-12 h-6 cursor-pointer rounded-full bg-gray-300 toggle-switch toggle-switch-label">
-                  <span class="absolute w-5 h-5 bg-white rounded-full shadow-md slider top-0.5 left-0.5"></span>
-                </label>
-            </div>
+                <div class="relative w-12 h-6 rounded-full switch-bg flex-shrink-0 mt-1">
+                    <div class="absolute w-5 h-5 bg-white rounded-full shadow top-0.5 left-0.5 switch-dot"></div>
+                </div>
+            </label>
           </div>
         `;
-        clinicalContainer.insertAdjacentHTML('beforeend', html);
+        clinicalTogglesEl.insertAdjacentHTML('beforeend', html);
       });
       
-      // Set up listeners for all static condition toggles and restore state
+      // Restore static states
       ['renal', 'liver', 'pregnancy', 'surgery', 'seizure', '6months', 'dm', 'htn'].forEach(id => {
           const el = document.getElementById(`check-${id}`);
-          if (el) {
-              el.checked = loadState(id) === 'true';
-          }
+          if (el) el.checked = loadState(id) === 'true';
       });
     }
 
-    // Central function to update indication status based on score
-    function updateIndicationStatus(score, statusText = 'TDM IS INDICATED') {
-        scoreEl.textContent = score;
-
-        if (score > 0) {
-            indicationBox.classList.remove('bg-gray-100', 'text-gray-700');
-            indicationBox.classList.add('bg-green-600', 'text-white');
-            indicationText.textContent = statusText;
-        } else {
-            indicationBox.classList.remove('bg-green-600', 'text-white');
-            indicationBox.classList.add('bg-gray-100', 'text-gray-700');
-            indicationText.textContent = 'NO INDICATION';
-        }
-    }
-
-    // --- Main Calculation Logic ---
+    // --- CALCULATION ---
     function calculateScore() {
-      // 1. Check for Seizure History Gate (Prerequisite)
+      const checkSeizure = document.getElementById('check-seizure');
+      const check6Months = document.getElementById('check-6months');
+      
       const hasSeizure = checkSeizure?.checked;
       const lessThan6Months = check6Months?.checked;
       const prerequisiteMet = hasSeizure && lessThan6Months;
 
-      // Ensure the toggles are saved for persistence
       saveState('seizure', checkSeizure.checked);
       saveState('6months', check6Months.checked);
 
       if (!prerequisiteMet) {
-          // If prerequisite is NOT met, disable scoring but keep links active
           setCoreInputsDisabled(true);
           return; 
       }
       
-      // If prerequisite is MET, enable core calculator
       setCoreInputsDisabled(false);
-
       let score = 0;
       
-      // Save input values to localStorage on every change
       saveState('age', inputAge.value);
       saveState('weight', inputWeight.value);
       saveState('height', inputHeight.value);
       
-      // --- 1. BMI-Related (Obese / Low BMI) ---
-      const calculatedBMI = getCalculatedBMI();
+      // BMI
+      let weight = parseFloat(inputWeight.value);
+      let height = parseFloat(inputHeight.value);
+      let calculatedBMI = 0;
       let bmiStatus = '';
-      
-      // Obese (BMI ≥ 27.5 kg/m²) - 1 point
-      if (calculatedBMI >= 27.5) { 
-          score += 1; 
-          bmiStatus = 'Status: OBESE';
-      } 
-      // Low BMI (BMI ≤ 18.5 kg/m²) - 1 point
-      else if (calculatedBMI > 0 && calculatedBMI <= 18.5) { 
-          score += 1; 
-          bmiStatus = 'Status: LOW BMI';
-      } 
-      else if (calculatedBMI > 0) {
-          bmiStatus = 'Status: Normal/Overweight';
+
+      if (weight > 0 && height > 0) {
+          calculatedBMI = weight / (height * height);
+          calculatedBmiEl.textContent = calculatedBMI.toFixed(1);
+          
+          if (calculatedBMI >= 27.5) { 
+              score += 1; 
+              bmiStatus = 'OBESE (+1)';
+              calculatedBmiEl.className = "text-3xl font-black text-red-600 mt-1";
+          } else if (calculatedBMI <= 18.5) { 
+              score += 1; 
+              bmiStatus = 'LOW BMI (+1)';
+              calculatedBmiEl.className = "text-3xl font-black text-red-600 mt-1";
+          } else {
+              bmiStatus = 'NORMAL';
+              calculatedBmiEl.className = "text-3xl font-black text-green-600 mt-1";
+          }
       } else {
-          bmiStatus = '';
+          calculatedBmiEl.textContent = '--';
+          calculatedBmiEl.className = "text-3xl font-black text-gray-300 mt-1";
       }
       bmiStatusEl.textContent = bmiStatus;
 
-      // --- 2. Comorbidities (Renal/Liver) - 1 point each ---
-      if (checkRenal?.checked) score++;
-      if (checkLiver?.checked) score++;
+      // Comorbidities
+      if (document.getElementById('check-renal')?.checked) score++;
+      if (document.getElementById('check-liver')?.checked) score++;
       
-      // NOTE: DM and HTN are toggled for data collection but DO NOT affect the score.
-
-      // --- 3. Special Population (Additive Scoring) ---
-      const age = parseFloat(inputAge.value);
+      // Special Pop
+      let age = parseFloat(inputAge.value);
       const isChild = age > 0 && age < 20;
       const isGeriatric = age >= 65;
-      const isPregnant = checkPregnancy?.checked;
-      const isPostSurgery = checkSurgery?.checked;
-
-      // Helper function for updating status box appearance
-      const updateStatusBox = (el, statusEl, isMet) => {
-          const metColor = isMet ? 'text-green-600' : 'text-red-500';
-          const metBg = isMet ? 'border-green-400 bg-green-50' : 'border-gray-200 bg-white';
-          
-          el.className = `p-3 rounded-xl shadow-sm border transition-colors duration-200 ${metBg}`;
-          statusEl.classList.remove('text-red-500', 'text-green-600');
-          statusEl.classList.add(metColor);
-          statusEl.textContent = isMet ? 'MET' : 'NOT MET';
+      
+      const updateBox = (box, txt, met) => {
+          if (met) {
+             box.classList.remove('bg-gray-50', 'border-gray-200');
+             box.classList.add('bg-green-50', 'border-green-300');
+             txt.textContent = 'MET (+1)';
+             txt.classList.remove('text-gray-400');
+             txt.classList.add('text-green-600');
+          } else {
+             box.classList.add('bg-gray-50', 'border-gray-200');
+             box.classList.remove('bg-green-50', 'border-green-300');
+             txt.textContent = 'NOT MET';
+             txt.classList.add('text-gray-400');
+             txt.classList.remove('text-green-600');
+          }
       };
-
-      // Update Age-based Status Displays and Score
-      updateStatusBox(ageChildPopBox, ageChildPopStatusEl, isChild);
-      updateStatusBox(ageGeriatricPopBox, ageGeriatricPopStatusEl, isGeriatric);
+      
+      updateBox(ageChildPopBox, ageChildPopStatusEl, isChild);
+      updateBox(ageGeriatricPopBox, ageGeriatricPopStatusEl, isGeriatric);
 
       if (isChild) score++;
       if (isGeriatric) score++;
-      if (isPregnant) score++;
-      if (isPostSurgery) score++;
+      if (document.getElementById('check-pregnancy')?.checked) score++;
+      if (document.getElementById('check-surgery')?.checked) score++;
 
-      // --- 4. Clinical Factors (1 point each) ---
+      // Clinical
       CRITERIA_TOGGLES.forEach(item => {
-        const checkbox = document.getElementById(`check-${item.id}`);
-        if (checkbox && checkbox.checked) {
-          score++;
-        }
+        const cb = document.getElementById(`check-${item.id}`);
+        if (cb && cb.checked) score++;
       });
       
-      // --- FINAL INDICATION STATUS ---
       updateIndicationStatus(score);
     }
 
-    // --- Initialization on Load ---
+    function updateIndicationStatus(score, textOverride) {
+        scoreEl.textContent = score;
+        if (scoreEl) {
+            scoreEl.className = score > 0 ? "text-6xl font-black text-indigo-600 mt-1" : "text-6xl font-black text-gray-300 mt-1";
+        }
+
+        if (textOverride) {
+            indicationBox.className = "mt-4 p-4 rounded-xl text-center shadow-lg bg-gray-100 text-gray-400";
+            indicationText.textContent = textOverride;
+            return;
+        }
+
+        if (score > 0) {
+            indicationBox.className = "mt-4 p-4 rounded-xl text-center shadow-lg bg-indigo-600 text-white animate-pulse-once";
+            indicationText.textContent = "TDM IS INDICATED";
+        } else {
+            indicationBox.className = "mt-4 p-4 rounded-xl text-center shadow-lg bg-gray-200 text-gray-500";
+            indicationText.textContent = "NO INDICATION";
+        }
+    }
+
+    // --- MODAL LOGIC (Toxicity/Interaction) ---
+    function openModal(type) {
+        if (type === 'toxicity') {
+            modalTitle.textContent = 'ASM ADR & Toxicity Checker';
+            const options = ASM_OPTIONS.map(d => `<option value="${d}">${d}</option>`).join('');
+            modalBody.innerHTML = `
+                <div class="space-y-4">
+                    <label class="block text-sm font-bold text-gray-700">Select Medication</label>
+                    <select id="asm-select" class="w-full p-3 bg-gray-50 border rounded-lg outline-none focus:ring-2 ring-indigo-500" onchange="updateToxicityResults(this.value)">
+                        <option value="">-- Select --</option>
+                        ${options}
+                    </select>
+                    <div id="tox-res" class="p-4 bg-gray-50 rounded-lg text-sm text-gray-500 text-center min-h-[100px] flex items-center justify-center">Select a drug above.</div>
+                </div>`;
+        } else {
+            modalTitle.textContent = 'Interaction Checker';
+            const options = ASM_OPTIONS.map(d => `<option value="${d}">${d}</option>`).join('');
+            modalBody.innerHTML = `
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Index Drug (ASM)</label>
+                        <select id="asm1" class="w-full p-3 bg-gray-50 border rounded-lg outline-none focus:ring-2 ring-indigo-500" onchange="checkInteraction()">
+                            <option value="">-- Select --</option>
+                            ${options}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Interacting Drug</label>
+                        <input id="drug2" type="text" placeholder="e.g. Rifampicin" class="w-full p-3 bg-gray-50 border rounded-lg outline-none focus:ring-2 ring-indigo-500" oninput="checkInteraction()">
+                    </div>
+                    <div id="int-res" class="p-4 bg-gray-50 rounded-lg text-sm text-gray-500 text-center">Select an ASM and type a second drug.</div>
+                </div>`;
+        }
+        modal.style.display = 'flex';
+    }
+
+    function updateToxicityResults(val) {
+        const el = document.getElementById('tox-res');
+        if(!val || !ASM_ADR_TOXICITY[val]) {
+            el.innerHTML = "Select a drug above.";
+            return;
+        }
+        const d = ASM_ADR_TOXICITY[val];
+        el.innerHTML = `
+            <div class="text-left space-y-3">
+                <div><span class="badge bg-red-100 text-red-800 px-2 py-1 rounded text-xs font-bold">ADR</span> <p class="mt-1 text-gray-800">${d.adr}</p></div>
+                <div><span class="badge bg-orange-100 text-orange-800 px-2 py-1 rounded text-xs font-bold">TOXICITY</span> <p class="mt-1 text-gray-800">${d.toxicity}</p></div>
+            </div>`;
+    }
+
+    function checkInteraction() {
+        const asm = document.getElementById('asm1').value;
+        const d2 = document.getElementById('drug2').value.trim().toUpperCase();
+        const el = document.getElementById('int-res');
+        
+        if(!asm || d2.length < 3) {
+            el.className = "p-4 bg-gray-50 rounded-lg text-sm text-gray-500 text-center";
+            el.innerHTML = "Select an ASM and type a second drug.";
+            return;
+        }
+
+        const data = ASM_INTERACTIONS[asm];
+        let hits = [];
+        data.increased_by.forEach(x => { if(d2.includes(x.toUpperCase()) || x.toUpperCase().includes(d2)) hits.push({type: 'INCREASE', drug: x}); });
+        data.decreased_by.forEach(x => { if(d2.includes(x.toUpperCase()) || x.toUpperCase().includes(d2)) hits.push({type: 'DECREASE', drug: x}); });
+
+        if(hits.length === 0) {
+            el.className = "p-4 bg-green-50 border border-green-200 rounded-lg text-center";
+            el.innerHTML = `<p class="text-green-700 font-bold">No major interaction found</p><p class="text-xs text-green-600 mt-1">Between ${asm} and ${d2}</p>`;
+        } else {
+            el.className = "p-4 bg-red-50 border border-red-200 rounded-lg text-left";
+            el.innerHTML = hits.map(h => `
+                <div class="mb-2 last:mb-0">
+                    <p class="font-bold text-red-700">⚠️ INTERACTION FOUND</p>
+                    <p class="text-sm text-red-600 mt-1"><strong>${h.drug}</strong> may <u>${h.type}</u> levels of ${asm}.</p>
+                </div>
+            `).join('');
+        }
+    }
+
+    // --- INIT ---
     window.onload = function() {
-      // 1. Render dynamic clinical toggles and restore state for ALL checkboxes
       renderToggles();
-      
-      // 2. Restore Input state (and save new state when typing)
       const inputs = ['age', 'weight', 'height'];
       inputs.forEach(id => {
           const el = document.getElementById(`input-${id}`);
-          const state = loadState(id);
-          if (el && state) el.value = state;
-          // Add listener to save immediately on input
+          const val = loadState(id);
+          if (el && val) el.value = val;
           el?.addEventListener('input', () => saveState(id, el.value));
       });
-
-      // 3. Initial calculation with restored state
       calculateScore();
-      
-      // 4. Start Firebase Utilization Tracking
       trackUtilization();
     };
 
-    // Expose functions to the global scope for onchange/oninput events and modal functions
+    // Expose
     window.handleToggleChange = handleToggleChange;
     window.calculateScore = calculateScore;
     window.openModal = openModal;
     window.closeModal = closeModal;
     window.updateToxicityResults = updateToxicityResults;
     window.checkInteraction = checkInteraction;
+
   </script>
 </body>
 </html>
+

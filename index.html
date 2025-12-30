@@ -21,10 +21,6 @@
     if (Object.keys(finalConfig).length > 0 && finalConfig.projectId) {
       window.app = initializeApp(finalConfig);
       window.db = getFirestore(window.app);
-      console.log("Firebase initialized successfully.");
-    } else {
-      console.warn("Firebase configuration missing.");
-      window.db = null;
     }
   </script>
   
@@ -35,115 +31,66 @@
     }
     
     .toggle-checkbox {
-        position: absolute;
-        opacity: 0;
-        cursor: pointer;
-        height: 0;
-        width: 0;
+        position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0;
     }
     
-    .toggle-checkbox:checked + label .switch-bg {
-        background-color: #10b981;
-    }
-    .toggle-checkbox:checked + label .switch-dot {
-        transform: translateX(100%);
-    }
+    .toggle-checkbox:checked + label .switch-bg { background-color: #10b981; }
+    .toggle-checkbox:checked + label .switch-dot { transform: translateX(1.5rem); }
     
-    .switch-bg {
-        transition: background-color 0.2s ease-in-out;
-        background-color: #e5e7eb;
-    }
-    .switch-dot {
-        transition: transform 0.2s ease-in-out;
-        transform: translateX(0);
-    }
+    .switch-bg { transition: background-color 0.2s; background-color: #e5e7eb; }
+    .switch-dot { transition: transform 0.2s; transform: translateX(0); }
 
     .input-field {
-        border: none;
-        border-radius: 0.5rem;
-        padding: 0.75rem;
-        text-align: right;
-        font-weight: 700;
-        color: #1e3a8a;
-        background: transparent;
-        width: 100%;
-        outline: none;
+        border: none; border-radius: 0.5rem; padding: 0.75rem; text-align: right;
+        font-weight: 700; color: #1e3a8a; background: transparent; width: 100%; outline: none;
     }
-    .input-wrapper {
-        transition: ring 0.2s;
-    }
-    .input-wrapper:focus-within {
-        ring: 2px;
-        ring-color: #6366f1;
-    }
+    .input-wrapper { transition: ring 0.2s; }
+    .input-wrapper:focus-within { ring: 2px; ring-color: #6366f1; }
 
     .modal-overlay {
-        position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0, 0, 0, 0.7);
-        display: none;
-        justify-content: center; align-items: center;
-        z-index: 50;
-        backdrop-filter: blur(2px);
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.7); display: none; justify-content: center; align-items: center;
+        z-index: 50; backdrop-filter: blur(2px);
     }
     .modal-content {
-        background: white;
-        padding: 1.5rem;
-        border-radius: 1rem;
-        width: 95%; max-width: 650px; max-height: 90vh;
-        overflow-y: auto;
-        animation: scaleUp 0.2s ease-out;
+        background: white; padding: 1.5rem; border-radius: 1rem; width: 95%; max-width: 650px;
+        max-height: 90vh; overflow-y: auto; animation: scaleUp 0.2s ease-out;
     }
     @keyframes scaleUp {
         from { transform: scale(0.95); opacity: 0; }
         to { transform: scale(1); opacity: 1; }
     }
 
-    /* --- UNIFORM DISABLED STATE --- */
-    /* Prevents interaction but keeps text readable (dimmed) */
+    /* --- IMPROVED DISABLED STATE --- */
+    /* Prevents interaction but keeps text perfectly readable */
     .disabled-area {
         pointer-events: none;
     }
-    
-    /* Target only text elements and icons for dimming, not the containers themselves */
     .disabled-area h2,
     .disabled-area .input-group,
     .disabled-area .switch-bg,
+    .disabled-area .status-box,
     .disabled-area span:not(.link-button),
     .disabled-area p:not(.link-button) {
-        opacity: 0.45;
-        filter: grayscale(100%);
+        opacity: 0.55; /* Increased opacity for better readability */
     }
+    .disabled-area .bg-white { background-color: #fafafa; }
 
-    /* Vibrant Blue Link Buttons - Always bright and clickable */
     .link-button {
-        color: #2563eb !important; /* Blue-600 */
-        opacity: 1 !important;
-        filter: none !important;
+        color: #2563eb !important; 
+        opacity: 1 !important; 
         cursor: pointer !important;
         pointer-events: all !important;
-        font-weight: 600;
-        text-decoration: underline;
+        font-weight: 600; text-decoration: underline;
     }
 
-    .pointer-events-auto {
-        pointer-events: all !important;
-    }
-    
-    /* Adherence Checklist Styling within Modal */
     .compliance-card {
-        border: 1px solid #e5e7eb;
-        padding: 1rem;
-        border-radius: 0.75rem;
-        margin-bottom: 0.75rem;
-        background: #ffffff;
+        border: 1px solid #e5e7eb; padding: 1rem; border-radius: 0.75rem;
+        margin-bottom: 0.75rem; background: #ffffff;
     }
     .score-box-adherence {
-        border: 3px dashed #cbd5e1;
-        padding: 1.5rem;
-        border-radius: 1rem;
-        text-align: center;
-        margin-top: 1.5rem;
+        border: 3px dashed #cbd5e1; padding: 1.5rem; border-radius: 1rem;
+        text-align: center; margin-top: 1.5rem;
     }
   </style>
 </head>
@@ -153,70 +100,62 @@
     <header class="p-6 bg-indigo-700 text-white relative overflow-hidden">
       <div class="relative z-10 text-center">
         <h1 class="text-2xl font-extrabold tracking-tight uppercase">Epilepsy EZ Check</h1>
-        <p class="text-sm mt-1 text-indigo-100 font-medium">
-            TDM Indication Score Calculator
-        </p>
-        <p class="text-[10px] mt-1 opacity-60 tracking-widest font-bold uppercase">
-            JKWPKL&P
-        </p>
+        <p class="text-sm mt-1 text-indigo-100 font-medium">TDM Indication Score Calculator</p>
+        <p class="text-[10px] mt-1 opacity-60 tracking-widest font-bold uppercase">JKWPKL&P</p>
       </div>
       <div class="absolute -top-10 -right-10 w-32 h-32 bg-indigo-600 rounded-full opacity-50"></div>
     </header>
 
     <div class="p-4 mx-6 mt-6 rounded-lg">
-        <p class="text-[11px] italic text-gray-500 text-center">
-            This tool is meant to support, not replace, clinical judgment.
-        </p>
+        <p class="text-[11px] italic text-gray-500 text-center">This tool is meant to support, not replace, clinical judgment.</p>
     </div>
 
     <main class="p-6 space-y-6">
         
-      <h2 class="text-lg font-bold text-indigo-700 border-b pb-2 mb-2 uppercase flex items-center gap-2">
-          Seizure History
-      </h2>
+      <h2 class="text-lg font-bold text-indigo-700 border-b pb-2 mb-2 uppercase">Seizure History</h2>
       <div id="seizure-history-gate" class="space-y-3 p-3 border border-gray-200 rounded-xl bg-white shadow-sm">
-        <div class="relative w-full">
-            <input type="checkbox" id="check-seizure" class="toggle-checkbox" onchange="calculateScore()">
-            <label for="check-seizure" class="flex justify-between items-center w-full cursor-pointer select-none">
-                <span class="text-sm font-medium text-gray-700">1. Has breakthrough seizures?</span>
-                <div class="relative w-12 h-6 rounded-full switch-bg">
-                    <div class="absolute w-5 h-5 bg-white rounded-full shadow top-0.5 left-0.5 switch-dot"></div>
-                </div>
-            </label>
+        <div class="flex justify-between items-center w-full">
+            <span class="text-sm font-medium text-gray-700">1. Has breakthrough seizures?</span>
+            <div class="relative">
+                <input type="checkbox" id="check-seizure" class="toggle-checkbox">
+                <label for="check-seizure" class="flex items-center cursor-pointer">
+                    <div class="relative w-12 h-6 rounded-full switch-bg"><div class="absolute w-5 h-5 bg-white rounded-full shadow top-0.5 left-0.5 switch-dot"></div></div>
+                </label>
+            </div>
         </div>
-        <div class="relative w-full border-t border-gray-100 pt-3">
-            <input type="checkbox" id="check-6months" class="toggle-checkbox" onchange="calculateScore()">
-            <label for="check-6months" class="flex justify-between items-center w-full cursor-pointer select-none">
-                <span class="text-sm font-medium text-gray-700">2. Seizure &lt; 6 months ago?</span>
-                <div class="relative w-12 h-6 rounded-full switch-bg">
-                    <div class="absolute w-5 h-5 bg-white rounded-full shadow top-0.5 left-0.5 switch-dot"></div>
-                </div>
-            </label>
+        <div class="flex justify-between items-center w-full border-t border-gray-100 pt-3">
+            <span class="text-sm font-medium text-gray-700">2. Seizure &lt; 6 months ago?</span>
+            <div class="relative">
+                <input type="checkbox" id="check-6months" class="toggle-checkbox">
+                <label for="check-6months" class="flex items-center cursor-pointer">
+                    <div class="relative w-12 h-6 rounded-full switch-bg"><div class="absolute w-5 h-5 bg-white rounded-full shadow top-0.5 left-0.5 switch-dot"></div></div>
+                </label>
+            </div>
         </div>
-        <p class="text-xs italic text-gray-400 pt-1 text-center">Both must be YES to enable TDM scoring.</p>
+        <p class="text-[10px] italic text-gray-400 pt-1 text-center">Both must be YES to enable TDM scoring.</p>
       </div>
       
       <div id="calculator-core" class="transition-opacity duration-300">
           <h2 class="text-lg font-bold text-indigo-700 border-b pb-2 mb-4 mt-6 uppercase">1. Demographics & BMI</h2>
           <div class="space-y-4">
             <div class="input-group">
-              <label for="input-age" class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Age</label>
+              <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Age</label>
               <div class="flex items-center bg-gray-50 rounded-lg border border-gray-200 input-wrapper">
-                <input type="number" id="input-age" placeholder="0" class="input-field" oninput="calculateScore()">
+                <input type="number" id="input-age" placeholder="0" class="input-field">
                 <span class="mr-3 text-gray-400 font-medium text-xs">yr</span>
               </div>
             </div>
             <div class="input-group">
-              <label for="input-weight" class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Weight</label>
+              <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Weight</label>
               <div class="flex items-center bg-gray-50 rounded-lg border border-gray-200 input-wrapper">
-                <input type="number" id="input-weight" placeholder="0.0" class="input-field" oninput="calculateScore()">
+                <input type="number" id="input-weight" placeholder="0.0" class="input-field">
                 <span class="mr-3 text-gray-400 font-medium text-xs">kg</span>
               </div>
             </div>
             <div class="input-group">
-              <label for="input-height" class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Height</label>
+              <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Height</label>
               <div class="flex items-center bg-gray-50 rounded-lg border border-gray-200 input-wrapper">
-                <input type="number" id="input-height" placeholder="0.00" class="input-field" oninput="calculateScore()">
+                <input type="number" id="input-height" placeholder="0.00" class="input-field">
                 <span class="mr-3 text-gray-400 font-medium text-xs">m</span>
               </div>
             </div>
@@ -229,41 +168,25 @@
 
           <h2 class="text-lg font-bold text-indigo-700 border-b pb-2 mb-4 mt-6 uppercase">2. Comorbidities</h2>
           <div id="comorbidity-toggles" class="space-y-3">
-            <div class="relative w-full bg-white border rounded-xl shadow-sm p-3">
-                <input type="checkbox" id="check-renal" class="toggle-checkbox" onchange="handleToggleChange('renal')">
-                <label for="check-renal" class="flex justify-between items-center w-full cursor-pointer select-none">
-                    <span class="text-sm font-medium text-gray-700">Renal Failure</span>
-                    <div class="relative w-12 h-6 rounded-full switch-bg">
-                        <div class="absolute w-5 h-5 bg-white rounded-full shadow top-0.5 left-0.5 switch-dot"></div>
-                    </div>
-                </label>
+            <div class="flex justify-between items-center p-3 bg-white border rounded-xl shadow-sm status-box">
+                <span class="text-sm font-medium text-gray-700">Renal Failure</span>
+                <input type="checkbox" id="check-renal" class="toggle-checkbox">
+                <label for="check-renal" class="w-12 h-6 rounded-full switch-bg relative cursor-pointer"><div class="absolute w-5 h-5 bg-white rounded-full shadow top-0.5 left-0.5 switch-dot"></div></label>
             </div>
-            <div class="relative w-full bg-white border rounded-xl shadow-sm p-3">
-                <input type="checkbox" id="check-liver" class="toggle-checkbox" onchange="handleToggleChange('liver')">
-                <label for="check-liver" class="flex justify-between items-center w-full cursor-pointer select-none">
-                    <span class="text-sm font-medium text-gray-700">Liver Failure</span>
-                    <div class="relative w-12 h-6 rounded-full switch-bg">
-                        <div class="absolute w-5 h-5 bg-white rounded-full shadow top-0.5 left-0.5 switch-dot"></div>
-                    </div>
-                </label>
+            <div class="flex justify-between items-center p-3 bg-white border rounded-xl shadow-sm status-box">
+                <span class="text-sm font-medium text-gray-700">Liver Failure</span>
+                <input type="checkbox" id="check-liver" class="toggle-checkbox">
+                <label for="check-liver" class="w-12 h-6 rounded-full switch-bg relative cursor-pointer"><div class="absolute w-5 h-5 bg-white rounded-full shadow top-0.5 left-0.5 switch-dot"></div></label>
             </div>
-            <div class="relative w-full bg-gray-50 border border-gray-200 rounded-xl shadow-sm p-3">
-                <input type="checkbox" id="check-dm" class="toggle-checkbox" onchange="handleToggleChange('dm')">
-                <label for="check-dm" class="flex justify-between items-center w-full cursor-pointer select-none">
-                    <span class="text-sm font-medium text-gray-500">Diabetes Mellitus</span>
-                    <div class="relative w-12 h-6 rounded-full switch-bg">
-                        <div class="absolute w-5 h-5 bg-white rounded-full shadow top-0.5 left-0.5 switch-dot"></div>
-                    </div>
-                </label>
+            <div class="flex justify-between items-center p-3 bg-white border rounded-xl shadow-sm status-box">
+                <span class="text-sm font-medium text-gray-700">Diabetes Mellitus</span>
+                <input type="checkbox" id="check-dm" class="toggle-checkbox">
+                <label for="check-dm" class="w-12 h-6 rounded-full switch-bg relative cursor-pointer"><div class="absolute w-5 h-5 bg-white rounded-full shadow top-0.5 left-0.5 switch-dot"></div></label>
             </div>
-            <div class="relative w-full bg-gray-50 border border-gray-200 rounded-xl shadow-sm p-3">
-                <input type="checkbox" id="check-htn" class="toggle-checkbox" onchange="handleToggleChange('htn')">
-                <label for="check-htn" class="flex justify-between items-center w-full cursor-pointer select-none">
-                    <span class="text-sm font-medium text-gray-500">Hypertension</span>
-                    <div class="relative w-12 h-6 rounded-full switch-bg">
-                        <div class="absolute w-5 h-5 bg-white rounded-full shadow top-0.5 left-0.5 switch-dot"></div>
-                    </div>
-                </label>
+            <div class="flex justify-between items-center p-3 bg-white border rounded-xl shadow-sm status-box">
+                <span class="text-sm font-medium text-gray-700">Hypertension</span>
+                <input type="checkbox" id="check-htn" class="toggle-checkbox">
+                <label for="check-htn" class="w-12 h-6 rounded-full switch-bg relative cursor-pointer"><div class="absolute w-5 h-5 bg-white rounded-full shadow top-0.5 left-0.5 switch-dot"></div></label>
             </div>
           </div>
           
@@ -281,23 +204,15 @@
                     <p id="age-geriatric-pop-status" class="text-[10px] font-black text-gray-400 uppercase">NOT MET</p>
                 </div>
             </div>
-            <div class="relative w-full bg-white border rounded-xl shadow-sm p-3">
-                <input type="checkbox" id="check-pregnancy" class="toggle-checkbox" onchange="handleToggleChange('pregnancy')">
-                <label for="check-pregnancy" class="flex justify-between items-center w-full cursor-pointer select-none">
-                    <span class="text-sm font-medium text-gray-700">Pregnant</span>
-                    <div class="relative w-12 h-6 rounded-full switch-bg">
-                        <div class="absolute w-5 h-5 bg-white rounded-full shadow top-0.5 left-0.5 switch-dot"></div>
-                    </div>
-                </label>
+            <div class="flex justify-between items-center p-3 bg-white border rounded-xl shadow-sm status-box">
+                <span class="text-sm font-medium text-gray-700">Pregnant</span>
+                <input type="checkbox" id="check-pregnancy" class="toggle-checkbox">
+                <label for="check-pregnancy" class="w-12 h-6 rounded-full switch-bg relative cursor-pointer"><div class="absolute w-5 h-5 bg-white rounded-full shadow top-0.5 left-0.5 switch-dot"></div></label>
             </div>
-            <div class="relative w-full bg-white border rounded-xl shadow-sm p-3">
-                <input type="checkbox" id="check-surgery" class="toggle-checkbox" onchange="handleToggleChange('surgery')">
-                <label for="check-surgery" class="flex justify-between items-center w-full cursor-pointer select-none">
-                    <span class="text-sm font-medium text-gray-700 w-3/4">Post-Major Surgery (&lt;3mo)</span>
-                    <div class="relative w-12 h-6 rounded-full switch-bg">
-                        <div class="absolute w-5 h-5 bg-white rounded-full shadow top-0.5 left-0.5 switch-dot"></div>
-                    </div>
-                </label>
+            <div class="flex justify-between items-center p-3 bg-white border rounded-xl shadow-sm status-box">
+                <span class="text-sm font-medium text-gray-700">Post-Major Surgery (&lt;3mo)</span>
+                <input type="checkbox" id="check-surgery" class="toggle-checkbox">
+                <label for="check-surgery" class="w-12 h-6 rounded-full switch-bg relative cursor-pointer"><div class="absolute w-5 h-5 bg-white rounded-full shadow top-0.5 left-0.5 switch-dot"></div></label>
             </div>
           </div>
 
@@ -305,66 +220,48 @@
           <div id="clinical-toggles" class="space-y-3"></div>
       </div> 
 
-      <button id="open-chatbot-btn" onclick="openModal('chat')" class="w-full mt-4 py-4 bg-green-600 text-white font-bold rounded-2xl shadow-lg hover:bg-green-700 transition flex items-center justify-center space-x-2">
+      <!-- Standalone AI Button -->
+      <button id="main-ai-btn" class="w-full mt-4 py-4 bg-green-600 text-white font-bold rounded-2xl shadow-lg hover:bg-green-700 transition flex items-center justify-center space-x-2 active:scale-95">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
         <span>Ask the Epilepsy AI</span>
       </button>
 
     </main>
 
-    <footer id="score-footer" class="p-6 bg-indigo-50 border-t border-indigo-100 text-center">
-      <div class="text-center">
-        <p class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Total Criteria Met</p>
-        <div id="final-score" class="text-6xl font-black text-gray-300 mt-1 transition-colors duration-300">
-          0
-        </div>
-      </div>
-      
+    <footer class="p-6 bg-indigo-50 border-t border-indigo-100 text-center">
+      <p class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Total Criteria Met</p>
+      <div id="final-score" class="text-6xl font-black text-gray-300 mt-1 transition-colors duration-300">0</div>
       <div id="indication-box" class="mt-4 p-4 rounded-xl text-center shadow-lg transition-all duration-300 bg-gray-200 text-gray-500">
         <p id="indication-text" class="text-xl font-extrabold uppercase">NO INDICATION</p>
       </div>
-
-      <div class="flex justify-end items-end text-xs text-gray-400 mt-6 border-t pt-4">
-          <div class="text-right">
-              <p>&copy; JKWPKL&P 2025</p>
-              <p class="text-[9px] opacity-70">v2.5 Final Stable</p>
-          </div>
-      </div>
+      <p class="text-right text-[9px] text-gray-400 mt-6">&copy; JKWPKL&P 2025 | v2.6</p>
     </footer>
 
     <!-- SHARED TOOL MODAL -->
-    <div id="drug-checker-modal" class="modal-overlay" onclick="closeModal(event, 'drug-checker-modal')">
+    <div id="drug-checker-modal" class="modal-overlay">
         <div class="modal-content shadow-2xl">
             <div class="flex justify-between items-center border-b pb-3 mb-4">
-                <h3 id="modal-title" class="text-xl font-bold text-indigo-700">Drug Checker</h3>
-                <button onclick="document.getElementById('drug-checker-modal').style.display='none';" class="text-gray-400 hover:text-red-500 text-3xl font-light leading-none focus:outline-none">
-                    &times;
-                </button>
+                <h3 id="modal-title" class="text-xl font-bold text-indigo-700">Tool</h3>
+                <button id="close-checker-btn" class="text-gray-400 hover:text-red-500 text-3xl font-light leading-none focus:outline-none">&times;</button>
             </div>
             <div id="modal-body"></div>
         </div>
     </div>
 
     <!-- CHATBOT MODAL -->
-    <div id="epilepsy-chatbot-modal" class="modal-overlay" onclick="closeModal(event, 'epilepsy-chatbot-modal')">
+    <div id="epilepsy-chatbot-modal" class="modal-overlay">
         <div class="modal-content shadow-2xl max-w-lg">
             <div class="flex justify-between items-center border-b pb-3 mb-4">
                 <h3 class="text-xl font-bold text-indigo-700">Epilepsy AI Reference</h3>
-                <button onclick="document.getElementById('epilepsy-chatbot-modal').style.display='none';" class="text-gray-400 hover:text-red-500 text-3xl font-light leading-none focus:outline-none">
-                    &times;
-                </button>
+                <button id="close-chat-btn" class="text-gray-400 hover:text-red-500 text-3xl font-light leading-none focus:outline-none">&times;</button>
             </div>
             <div id="chat-container" class="h-96 flex flex-col justify-between">
                 <div id="chat-history" class="overflow-y-auto p-4 bg-slate-50 border rounded-xl mb-3 space-y-3 flex flex-col text-xs">
-                    <div class="bg-indigo-100 text-indigo-800 p-2 rounded-lg text-xs self-start max-w-[85%]">
-                        Hi, ask me about epilepsy management in malaysia
-                    </div>
+                    <div class="bg-indigo-100 text-indigo-800 p-2 rounded-lg text-xs self-start max-w-[85%]">Hi, ask me about epilepsy management in malaysia</div>
                 </div>
-                <form id="chat-form" class="flex space-x-2" onsubmit="event.preventDefault(); handleChatQuery()">
-                    <input type="text" id="chat-input" placeholder="Ask a question..." class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 outline-none">
-                    <button type="submit" id="chat-send-btn" class="bg-indigo-600 text-white px-4 rounded-xl font-bold">
-                        Ask
-                    </button>
+                <form id="chat-form" class="flex space-x-2">
+                    <input type="text" id="chat-input" placeholder="Ask a question..." class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 outline-none">
+                    <button type="submit" id="chat-send-btn" class="bg-indigo-600 text-white px-4 rounded-xl font-bold">Ask</button>
                 </form>
             </div>
         </div>
@@ -373,369 +270,129 @@
   </div>
 
   <script type="module">
+    // --- !!! PASTE YOUR API KEY (STARTING WITH AIzaSy) BETWEEN THE QUOTES BELOW !!! ---
     const apiKey = "AIzaSyAJ_-0ppdXtWD40j0zWp2mfJG8DlUh8YR8"; 
-    const GEMINI_MODEL = 'gemini-1.5-flash'; 
-    const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+    const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
     const ASM_OPTIONS = ["VALPROIC ACID", "CARBAMAZEPINE", "PHENYTOIN", "PHENOBARBITONE"];
 
-    const TDM_GUIDE_CONTENT = `
-    --- CLINICAL PHARMACOKINETICS PHARMACY HANDBOOK (2ND ED) ---
-    - CARBAMAZEPINE (CBZ): Therapeutic Range: 4-12 mg/L. Vd: 0.6-2 L/kg. Clearance: Auto-inducer (CYP3A4). Drug Interactions: Inhibitors (Clarithromycin, Diltiazem, Grapefruit juice) increase CBZ concentration. Inducers (Phenobarbital, Rifampicin) decrease CBZ concentration. ADR: Steven-Johnson syndrome, Toxic epidermal necrolysis.
-    - PHENYTOIN (PHT): Therapeutic Range: 10-20 mg/L. Metabolism: Nonlinear (Michaelis-Menten kinetics). High protein binding (90-95%). ADR: Far lateral nystagmus (>20 mg/L), Ataxia (>30 mg/L). Interactions: Fluoxetine, Isoniazid increase PHT. Carbamazepine, Valproic Acid decrease PHT.
-    - PHENOBARBITONE (PB): Therapeutic Range: 15-40 mg/L. Half-life: 96 hours (Adults). Clearance: 0.004 L/kg/hr (Adults). ADR: Sedation (>5 mg/L), Impaired cognition (>19 mg/L), Coma (>=65 mg/L).
-    - VALPROIC ACID (VPA): Therapeutic Range: 50-100 mg/L. High protein binding (90-95%) and concentration-dependent. Clearance: Hepatic, 7-12 ml/kg/hr (Adult Mono). ADR: Hepatotoxicity, Pancreatitis, Thrombocytopenia, Hyperammonemic encephalopathy.
-    --- END HANDBOOK CONTENT ---
-    `;
-
     const ASM_ADR_TOXICITY = {
-        "VALPROIC ACID": { adr: "Hepatotoxicity, Pancreatitis, Alopecia, Thrombocytopenia, Steven-Johnson syndrome, Hyperammonemic encephalopathy", toxicity: "CNS depression such as lethargy, sedation, vomiting, tachycardia, hypotension and respiratory depression" },
-        "CARBAMAZEPINE": { adr: "Steven-Johnson syndrome, Toxic epidermal necrolysis, Agranulocytosis, Thrombocytopenia, Leukopenia, Pancytopenia, Hepatitis, Hepatotoxicity, Angioedema, Blurred vision, Nystagmus", toxicity: "Drowsiness, slurred speech, ataxia, hallucination, nausea & vomiting, hypotension, seizures, respiratory depression, coma" },
-        "PHENYTOIN": { adr: "Far lateral nystagmus (>20 mg/L), Ataxia (>30 mg/L), Diminished mental capacity (>40 mg/L), Hepatotoxicity, Hematological disorders, Steven-Johnson syndrome, Toxic epidermal necrolysis", toxicity: "Nystagmus, ataxia, tremor, irritability or agitation, confusion, vomiting, lethargy, hallucinations, coma" },
-        "PHENOBARBITONE": { adr: "Ataxia, Mental dullness, Paresthesia restlessness, Megaloblastic anaemia, Hepatotoxicity, Hypocalcaemia, Steven-Johnson syndrome", toxicity: "Somnolence, slurred speech, nystagmus, ataxia, coma, hypotension, decreased myocardial contractility, hypothermia and respiratory failure" }
+        "VALPROIC ACID": { adr: "Hepatotoxicity, Pancreatitis, Alopecia, SJS, Hyperammonemic encephalopathy", toxicity: "Sedation, vomiting, tachycardia, respiratory depression" },
+        "CARBAMAZEPINE": { adr: "SJS, TEN, Agranulocytosis, Hepatitis, Blurred vision, Nystagmus", toxicity: "Drowsiness, slurred speech, ataxia, nausea, hypotension" },
+        "PHENYTOIN": { adr: "Nystagmus (>20 mg/L), Ataxia (>30 mg/L), Diminished mental capacity (>40 mg/L), SJS, TEN", toxicity: "Tremor, agitation, confusion, vomiting, hallucinations" },
+        "PHENOBARBITONE": { adr: "Ataxia, Mental dullness, Megaloblastic anaemia, SJS", toxicity: "Somnolence, slurred speech, coma, hypotension, respiratory failure" }
     };
 
     const ASM_INTERACTIONS = {
-        "VALPROIC ACID": { "increased_by": ["Cimetidine", "Chlorpromazine", "Felbamate", "Topiramate"], "decreased_by": ["Carbamazepine", "Carbapenem", "Lamotrigine", "Phenytoin", "Phenobarbitone", "Primidone", "Rifampicin"] },
-        "PHENYTOIN": { "increased_by": ["Allopurinol", "Amiodarone", "Azole derivatives", "Calcium Channel Blocker", "Carbamazepine", "Cefazolin", "Chloramphenicol", "Fluoxetine", "Fluvoxamine", "Vitamin K Antagonist", "Hydroxyzine", "Isoniazid", "Proton Pump Inhibitors", "Serotonheavy Inhibitors", "Sulfonamide Derivatives", "Tacrolimus", "Ticlopidine", "Topiramate", "Trimethoprim"], "decreased_by": ["Carbamazepine", "Ciprofloxacin", "Folic Acid", "Methotrexate", "Pyridoxine", "Rifampin", "Ritonavir z", "Theophylline", "Valproic Acid"] },
-        "PHENOBARBITONE": { "increased_by": ["Carbonic Anhydrase inhibitor", "Chloramphenicol", "Clarithromycin", "Hydroxyzine", "Magnesium Sulphate", "Methylphenidate", "Phenytoin", "Primidone", "Quinine", "Valproic Acid and Derivative"], "decreased_by": ["Amphetamine", "Cholestyramine Resin", "Folic Acid", "Ketorolac", "Leucovorin Calcium", "Mefloquine", "Multivitamins/ Minerals", "Orlistat", "Pyridoxine", "Rifamycin derivative", "Tipranavir"] },
-        "CARBAMAZEPINE": { "increased_by": ["Clarithromycin", "Diltiazem", "Erythromycin", "Fluoxetine", "Grapefruit juice", "Isoniazid", "Loratadine", "Valproate", "Verapamil", "Azole antifungals", "Fluconazole, Itraconazole, Ketoconazole", "Protease inhibitors: Indinavir, Nelfinavir, Ritonavir"], "decreased_by": ["Cisplatin", "Doxorubicin", "Phenobarbital", "Phenytoin", "Primidone", "Rifampicin", "Theophylline", "Carbamazepine (autoinduction)"] }
+        "VALPROIC ACID": { "inc": ["Cimetidine", "Topiramate"], "dec": ["Carbapenem", "Rifampicin"] },
+        "PHENYTOIN": { "inc": ["Amiodarone", "Azoles", "Isoniazid", "PPIs", "SSRIs"], "dec": ["Rifampin", "Theophylline", "VPA"] },
+        "PHENOBARBITONE": { "inc": ["Clarithromycin", "VPA"], "dec": ["Mefloquine", "Orlistat", "Rifamycin"] },
+        "CARBAMAZEPINE": { "inc": ["Erythromycin", "Fluoxetine", "Grapefruit", "Isoniazid"], "dec": ["Cisplatin", "Rifampicin", "Theophylline"] }
     };
 
-    const COMPLIANCE_QUESTIONS = [
-        "In the past month, did you miss taking your Anti-Seizure Medication (ASM) as prescribed (e.g., skip a dose, or take it alternately)?",
-        "In the past month, have you ever forgotten to take your ASM dose?",
-        "Have you stopped or reduced your ASM because you felt seizure-free or thought the medication was unnecessary?",
-        "Have you reduced your dose because you were worried about side effects (or potential long-term harm to your body)?",
-        "Are you uncertain about the correct dosage, frequency, or timing for any of your Anti-Seizure Medications?",
-        "Have you missed an appointment or been late to refill your medication supply in the last three months, leading to running out?",
-        "Do you rely solely on someone else to remind you, and sometimes miss your ASM dose if they don't?",
-        "Do you feel you have trouble managing your medication (e.g., keeping track of timing, handling complex schedules, or running out)?",
+    const CRITERIA = [
+      { id: 'sleep', text: 'Seizure occurs during sleep' },
+      { id: 'dose', text: 'Any drug/dose changes (ASM only)' },
+      { id: 'sub', text: 'Suspected subtherapeutic dose' },
+      { id: 'tox', text: 'Suspected adverse effect / toxicity', link: 'toxicity' },
+      { id: 'med', text: 'Changes in medication (Brand / Formulation)' },
+      { id: 'comp', text: 'Poor compliance suspected', link: 'compliance' },
+      { id: 'int', text: 'Any suspected interaction', link: 'interaction' },
     ];
 
-    const CRITERIA_TOGGLES = [
-      { id: '2', text: 'Seizure occurs during sleep' },
-      { id: '3', text: 'Any drug/dose changes (ASM only)' },
-      { id: '4', text: 'Suspected subtherapeutic dose' },
-      { id: '5', text: 'Suspected adverse effect / toxicity', link: 'toxicity' },
-      { id: '6a', text: 'Changes in medication (Brand / Formulation)' },
-      { id: '7', text: 'Poor compliance suspected', link: 'compliance' },
-      { id: '8', text: 'Any suspected interaction', link: 'interaction' },
-    ];
+    const load = (id) => localStorage.getItem(`ep-${id}`);
+    const save = (id, val) => localStorage.setItem(`ep-${id}`, val);
 
-    const getStorageKey = (id) => `epilepsy-ez-${id}`;
-    const loadState = (id) => localStorage.getItem(getStorageKey(id));
-    const saveState = (id, value) => localStorage.setItem(getStorageKey(id), value);
-
-    function displayMessage(sender, text) {
-        const history = document.getElementById('chat-history');
-        const isUser = sender === 'user';
-        const bubbleClass = isUser ? 'bg-indigo-600 text-white self-end' : 'bg-gray-200 text-gray-800 self-start';
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `${bubbleClass} p-2 rounded-lg text-xs max-w-[85%] mb-2`;
-        messageDiv.textContent = text;
-        history.appendChild(messageDiv);
-        history.scrollTop = history.scrollHeight;
+    function display(sender, text) {
+        const hist = document.getElementById('chat-history');
+        const bubble = sender === 'user' ? 'bg-indigo-600 text-white self-end' : 'bg-gray-200 text-gray-800 self-start';
+        const div = document.createElement('div');
+        div.className = `${bubble} p-2 rounded-lg text-xs max-w-[85%] mb-2`;
+        div.textContent = text;
+        hist.appendChild(div);
+        hist.scrollTop = hist.scrollHeight;
     }
 
-    function openChatModal() {
-        document.getElementById('epilepsy-chatbot-modal').style.display = 'flex';
-        const history = document.getElementById('chat-history');
-        if (history.children.length > 1) {
-            history.innerHTML = `<div class="bg-indigo-100 text-indigo-800 p-2 rounded-lg text-xs self-start max-w-[85%]">Hi, ask me about epilepsy management in malaysia</div>`;
-        }
-    }
-    
-    async function retryFetch(url, options, retries = 3) {
-        for (let i = 0; i < retries; i++) {
-            try {
-                const response = await fetch(url, options);
-                if (response.ok) return response;
-                if (response.status >= 400 && response.status < 500) throw new Error(`Client Error: ${response.status}`);
-                const delay = Math.pow(2, i) * 1000; 
-                await new Promise(resolve => setTimeout(resolve, delay));
-            } catch (error) { if (i === retries - 1) throw error; }
-        }
-        throw new Error("API request failed.");
-    }
-
-    async function handleChatQuery() {
-        const input = document.getElementById('chat-input');
-        const query = input.value.trim();
-        const sendBtn = document.getElementById('chat-send-btn');
-        const history = document.getElementById('chat-history');
+    async function handleChat() {
+        const input = document.getElementById('chat-input'), query = input.value.trim();
         if (!query) return;
-        
-        if (!apiKey) {
-            const errDiv = document.createElement('div');
-            errDiv.className = "text-red-600 font-bold p-2 bg-red-50 rounded text-[10px]";
-            errDiv.textContent = "Error: Missing Key. Paste your key in Line 229.";
-            history.appendChild(errDiv);
-            return;
-        }
-
-        displayMessage('user', query);
-        input.value = '';
-        sendBtn.disabled = true;
-        
+        if (!apiKey) { alert("Missing API Key in Line 212."); return; }
+        display('user', query); input.value = '';
         const loading = document.createElement('div');
         loading.className = "text-gray-400 italic mb-2 text-[10px]";
         loading.textContent = "Thinking...";
-        history.appendChild(loading);
-        history.scrollTop = history.scrollHeight;
+        document.getElementById('chat-history').appendChild(loading);
 
         try {
-            const systemPrompt = `You are a friendly, knowledgeable Clinical Pharmacist Assistant specializing in epilepsy management. Provide simple, plain text answers based strictly on the Malaysian Consensus Guidelines and Pharmacokinetics Handbook. 
-            CRITICAL: DO NOT use markdown, DO NOT use asterisks (*), DO NOT use bolding (**), and DO NOT use bullet points or lists. 
-            Use only simple, natural sentences. ${TDM_GUIDE_CONTENT} 
-            Your final answer MUST be plain text only. No references or citations.`;
-            
-            const payload = { contents: [{ parts: [{ text: query }] }], systemInstruction: { parts: [{ text: systemPrompt }] } };
-            const response = await retryFetch(GEMINI_API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }, 3);
-            const result = await response.json();
+            const prompt = `You are a knowledge assistant for epilepsy in Malaysia. Provide simple, short, plain text answers. DO NOT use markdown, asterisks (*), bolding (**), or lists. Use only plain sentences. No citations. Answer based on Malaysian Epilepsy Guidelines.`;
+            const resp = await fetch(GEMINI_API_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ contents: [{ parts: [{ text: query }] }], systemInstruction: { parts: [{ text: prompt }] } }) });
+            const data = await resp.json();
             loading.remove();
-            
-            if (result.error) {
-                displayMessage('ai', `Error: ${result.error.message}`);
-            } else {
-                let text = result.candidates?.[0]?.content?.parts?.[0]?.text || "I was unable to retrieve an answer.";
-                // Extra security: remove any markdown symbols
-                const cleanText = text.replace(/\*/g, '');
-                displayMessage('ai', cleanText);
-            }
-        } catch (error) {
-            loading.remove();
-            displayMessage('ai', `Error lookup: ${error.message}`);
-        } finally { sendBtn.disabled = false; }
-    }
-
-    function openModal(type) {
-        const modal = document.getElementById('drug-checker-modal');
-        const modalTitle = document.getElementById('modal-title');
-        const modalBody = document.getElementById('modal-body');
-        
-        if (type === 'toxicity') {
-            modalTitle.textContent = 'ASM ADR & Toxicity Checker';
-            const options = ASM_OPTIONS.map(d => `<option value="${d}">${d}</option>`).join('');
-            modalBody.innerHTML = `<div class="space-y-4"><label class="block text-sm font-bold text-gray-700">Select Medication</label><select id="asm-select" class="w-full p-3 bg-gray-50 border rounded-lg outline-none focus:ring-2 ring-indigo-500 font-bold text-indigo-900" onchange="updateToxicityResults(this.value)"><option value="">-- Select --</option>${options}</select><div id="tox-res" class="p-4 bg-blue-50 rounded-lg text-sm text-gray-500 text-center min-h-[100px] flex items-center justify-center hidden"></div></div>`;
-        } else if (type === 'interaction') {
-            modalTitle.textContent = 'Interaction Checker';
-            const options = ASM_OPTIONS.map(d => `<option value="${d}">${d}</option>`).join('');
-            modalBody.innerHTML = `<div class="space-y-4"><div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Index Drug (ASM)</label><select id="asm1" class="w-full p-3 bg-gray-50 border rounded-lg outline-none focus:ring-2 ring-indigo-500 font-bold text-indigo-900" onchange="checkInteraction()"><option value="">-- Select --</option>${options}</select></div><div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Interacting Drug</label><input id="drug2" type="text" placeholder="e.g. Rifampicin" class="w-full p-3 bg-gray-50 border rounded-lg outline-none focus:ring-2 ring-indigo-500" oninput="checkInteraction()"></div><div id="int-res" class="p-4 bg-gray-50 rounded-lg text-sm text-gray-500 text-center text-xs">Select an ASM and type a second drug.</div></div>`;
-        } else if (type === 'compliance') {
-            modalTitle.textContent = 'ASM Adherence Checklist';
-            let qHtml = COMPLIANCE_QUESTIONS.map((q, i) => `
-                <div class="compliance-card">
-                    <p class="text-sm font-medium text-gray-900 mb-3"><span class="text-indigo-600 font-bold">${i+1}.</span> ${q}</p>
-                    <div class="flex space-x-6">
-                        <label class="flex items-center cursor-pointer"><input type="radio" name="cq${i+1}" value="0" class="w-4 h-4 text-red-600"><span class="ml-2 text-sm text-red-600 font-bold">Yes</span></label>
-                        <label class="flex items-center cursor-pointer"><input type="radio" name="cq${i+1}" value="1" class="w-4 h-4 text-green-600"><span class="ml-2 text-sm text-green-600 font-bold">No</span></label>
-                    </div>
-                </div>`).join('');
-            
-            modalBody.innerHTML = `
-                <div class="space-y-2">
-                    <p class="text-[10px] text-gray-400 mb-4 font-bold text-center tracking-widest uppercase">Score 1 point for every "No" response</p>
-                    ${qHtml}
-                    <button onclick="calculateComplianceScore()" class="w-full mt-4 py-4 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition shadow-md text-sm">Calculate Result</button>
-                    <div id="comp-res" class="hidden"></div>
-                </div>`;
-        } else if (type === 'chat') {
-            openChatModal();
-            return;
-        }
-        modal.style.display = 'flex';
-    }
-
-    window.calculateComplianceScore = function() {
-        let score = 0;
-        let answeredCount = 0;
-        COMPLIANCE_QUESTIONS.forEach((q, i) => {
-            const sel = document.querySelector(`input[name="cq${i+1}"]:checked`);
-            if (sel) { score += parseInt(sel.value); answeredCount++; }
-        });
-
-        const res = document.getElementById('comp-res');
-        res.classList.remove('hidden');
-
-        if (answeredCount < 8) {
-            res.className = "mt-4 p-4 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm font-bold text-center";
-            res.textContent = "Please answer all 8 questions.";
-            return;
-        }
-
-        let grade = '', color = '';
-        if (score >= 7) { grade = 'High Compliance'; color = 'bg-green-50 border-green-400 text-green-700'; }
-        else if (score >= 5) { grade = 'Moderate Compliance'; color = 'bg-yellow-50 border-yellow-400 text-yellow-700'; }
-        else { grade = 'Poor Compliance'; color = 'bg-red-50 border-red-400 text-red-700'; }
-
-        res.className = `score-box-adherence ${color} border-2 border-dashed mt-4 p-4 rounded-xl font-bold text-center`;
-        res.innerHTML = `Result: ${score}/8<br><span class="uppercase text-sm">${grade}</span>`;
-        res.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-
-    function closeModal(event, modalId) {
-        const modalEl = document.getElementById(modalId);
-        if (event.target === modalEl) modalEl.style.display = 'none';
-    }
-
-    function updateToxicityResults(val) {
-        const el = document.getElementById('tox-res');
-        if(!val || !ASM_ADR_TOXICITY[val]) { el.classList.add('hidden'); return; }
-        const d = ASM_ADR_TOXICITY[val];
-        el.classList.remove('hidden');
-        el.innerHTML = `<div class="text-left space-y-3"><div><span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs font-bold">ADR</span> <p class="mt-1 text-gray-800 text-xs">${d.adr}</p></div><div><span class="bg-orange-100 text-orange-800 px-2 py-1 rounded text-xs font-bold">TOXICITY</span> <p class="mt-1 text-gray-800 text-xs">${d.toxicity}</p></div></div>`;
-    }
-
-    function checkInteraction() {
-        const asm = document.getElementById('asm1').value;
-        const d2 = document.getElementById('drug2').value.trim().toUpperCase();
-        const el = document.getElementById('int-res');
-        if(!asm || d2.length < 3) { el.className = "p-4 bg-gray-50 rounded-lg text-sm text-gray-500 text-center"; el.innerHTML = "Select an ASM and type a second drug."; return; }
-        const data = ASM_INTERACTIONS[asm];
-        let hits = [];
-        data.increased_by.forEach(x => { if(d2.includes(x.toUpperCase()) || x.toUpperCase().includes(d2)) hits.push({type: 'INCREASE', drug: x}); });
-        data.decreased_by.forEach(x => { if(d2.includes(x.toUpperCase()) || x.toUpperCase().includes(d2)) hits.push({type: 'DECREASE', drug: x}); });
-        if(hits.length === 0) {
-            el.className = "p-4 bg-green-50 border border-green-200 rounded-lg text-center text-xs";
-            el.innerHTML = `<p class="text-green-700 font-bold">No major interaction found</p><p class="text-[10px] text-green-600 mt-1">Between ${asm} and ${d2}</p>`;
-        } else {
-            el.className = "p-4 bg-red-50 border border-red-200 rounded-lg text-left text-xs";
-            el.innerHTML = hits.map(h => `<div class="mb-2 last:mb-0"><p class="font-bold text-red-700">⚠️ INTERACTION FOUND</p><p class="text-xs text-red-600 mt-1"><strong>${h.drug}</strong> may <u>${h.type}</u> levels of ${asm}.</p></div>`).join('');
-        }
+            let text = data.candidates?.[0]?.content?.parts?.[0]?.text || "No response.";
+            display('ai', text.replace(/\*/g, ''));
+        } catch (e) { loading.textContent = "Error."; }
     }
 
     function calculateScore() {
-      const checkSeizure = document.getElementById('check-seizure');
-      const check6Months = document.getElementById('check-6months');
-      const prerequisiteMet = checkSeizure?.checked && check6Months?.checked;
-      
-      const coreDiv = document.getElementById('calculator-core');
-      const scoreEl = document.getElementById('final-score');
-      const box = document.getElementById('indication-box');
-      const text = document.getElementById('indication-text');
-
-      saveState('seizure', checkSeizure?.checked);
-      saveState('6months', check6Months?.checked);
-
-      if (!prerequisiteMet) { 
-          coreDiv.classList.add('disabled-area');
-          scoreEl.textContent = "0";
-          scoreEl.className = "text-6xl font-black text-gray-300 mt-1";
-          box.className = "mt-4 p-4 rounded-xl text-center shadow-lg bg-gray-200 text-gray-500";
-          text.textContent = "NO INDICATION";
-          return; 
-      }
-
-      coreDiv.classList.remove('disabled-area');
+      const g1 = document.getElementById('check-seizure').checked, g2 = document.getElementById('check-6months').checked;
+      const core = document.getElementById('calculator-core');
+      save('seizure', g1); save('6months', g2);
+      if (!(g1 && g2)) { core.classList.add('disabled-area'); document.getElementById('final-score').textContent="0"; return; }
+      core.classList.remove('disabled-area');
       let score = 0;
-
-      const weight = parseFloat(document.getElementById('input-weight').value);
-      const height = parseFloat(document.getElementById('input-height').value);
-      const bmiEl = document.getElementById('calculated-bmi');
-      const bmiStatusEl = document.getElementById('bmi-status');
-      
-      if (weight > 0 && height > 0) {
-          const bmi = weight / (height * height);
-          bmiEl.textContent = bmi.toFixed(1);
-          if (bmi >= 27.5 || bmi <= 18.5) {
-              score++;
-              bmiEl.className = "text-2xl font-black text-red-600";
-              bmiStatusEl.textContent = bmi >= 27.5 ? 'OBESE' : 'LOW BMI';
-          } else {
-              bmiEl.className = "text-2xl font-black text-green-600";
-              bmiStatusEl.textContent = 'NORMAL';
-          }
-      } else { 
-          bmiEl.textContent = '--'; 
-          bmiEl.className = "text-2xl font-black text-gray-300";
-          bmiStatusEl.textContent = '';
+      const w = parseFloat(document.getElementById('input-weight').value), h = parseFloat(document.getElementById('input-height').value);
+      if (w > 0 && h > 0) {
+          const bmi = w / (h * h); document.getElementById('calculated-bmi').textContent = bmi.toFixed(1);
+          if (bmi >= 27.5 || bmi <= 18.5) { score++; document.getElementById('bmi-status').textContent = bmi >= 27.5 ? 'OBESE' : 'LOW BMI'; } else document.getElementById('bmi-status').textContent = 'NORMAL';
       }
-
       const age = parseFloat(document.getElementById('input-age').value);
-      const isChild = age > 0 && age < 20;
-      const isGeriatric = age >= 65;
-      
-      const updateBox = (boxId, statusId, met) => {
-          const b = document.getElementById(boxId);
-          const s = document.getElementById(statusId);
-          if (met) { b.classList.replace('bg-gray-50', 'bg-green-50'); b.classList.replace('border-gray-200', 'border-green-300'); s.textContent = 'MET'; s.className = 'text-[10px] font-black text-green-600 uppercase'; }
-          else { b.classList.replace('bg-green-50', 'bg-gray-50'); b.classList.replace('border-green-300', 'border-gray-200'); s.textContent = 'NOT MET'; s.className = 'text-[10px] font-black text-gray-400 uppercase'; }
-      };
-      
-      updateBox('age-child-pop-box', 'age-child-pop-status', isChild);
-      updateBox('age-geriatric-pop-box', 'age-geriatric-pop-status', isGeriatric);
-
-      if (isChild) score++;
-      if (isGeriatric) score++;
-      if (document.getElementById('check-renal')?.checked) score++;
-      if (document.getElementById('check-liver')?.checked) score++;
-      if (document.getElementById('check-pregnancy')?.checked) score++;
-      if (document.getElementById('check-surgery')?.checked) score++;
-      CRITERIA_TOGGLES.forEach(item => { if (document.getElementById(`check-${item.id}`)?.checked) score++; });
-      
-      scoreEl.textContent = score;
-      if (score > 0) {
-          scoreEl.className = "text-6xl font-black text-indigo-600 mt-1";
-          box.className = "mt-4 p-4 rounded-xl text-center shadow-lg bg-indigo-600 text-white animate-pulse";
-          text.textContent = "TDM IS INDICATED";
-      } else {
-          scoreEl.className = "text-6xl font-black text-gray-300 mt-1";
-          box.className = "mt-4 p-4 rounded-xl text-center shadow-lg bg-gray-200 text-gray-500";
-          text.textContent = "NO INDICATION";
-      }
+      if (age > 0 && age < 20) { score++; document.getElementById('age-child-pop-status').textContent='MET'; } else document.getElementById('age-child-pop-status').textContent='NOT MET';
+      if (age >= 65) { score++; document.getElementById('age-geriatric-pop-status').textContent='MET'; } else document.getElementById('age-geriatric-pop-status').textContent='NOT MET';
+      ['renal', 'liver', 'dm', 'htn', 'pregnancy', 'surgery'].forEach(id => { if(document.getElementById(`check-${id}`).checked) score++; });
+      CRITERIA.forEach(c => { if(document.getElementById(`check-${c.id}`).checked) score++; });
+      document.getElementById('final-score').textContent = score;
+      document.getElementById('indication-box').className = score > 0 ? "mt-4 p-4 rounded-xl text-center shadow-lg bg-indigo-600 text-white animate-pulse" : "mt-4 p-4 rounded-xl text-center shadow-lg bg-gray-200 text-gray-500";
+      document.getElementById('indication-text').textContent = score > 0 ? "TDM IS INDICATED" : "NO INDICATION";
     }
 
-    function handleToggleChange(id) {
-        const checkbox = document.getElementById(`check-${id}`);
-        if (checkbox) saveState(id, checkbox.checked);
-        calculateScore();
-    }
-    
-    function renderToggles() {
-      const clinicalTogglesEl = document.getElementById('clinical-toggles');
-      clinicalTogglesEl.innerHTML = '';
-      CRITERIA_TOGGLES.forEach(item => {
-        const key = item.id;
-        const isChecked = loadState(key) === 'true';
-        let linkLabel = '';
-        if(item.link === 'toxicity') linkLabel = 'Check Toxicity';
-        else if(item.link === 'interaction') linkLabel = 'Check Interaction';
-        else if(item.link === 'compliance') linkLabel = 'Check Compliance';
-
-        const linkButtonHtml = item.link 
-            ? `<div class="mt-1 pointer-events-auto"><button class="link-button text-xs underline focus:outline-none" onclick="openModal('${item.link}')">${linkLabel} &raquo;</button></div>`
-            : '';
-
-        const html = `<div class="relative w-full bg-white border rounded-xl shadow-sm p-3"><input type="checkbox" id="check-${key}" class="toggle-checkbox" onchange="handleToggleChange('${key}')" ${isChecked ? 'checked' : ''}><label for="check-${key}" class="flex justify-between items-start w-full cursor-pointer select-none"><div class="flex-1 mr-4"><span class="text-sm font-medium text-gray-700 block">${item.text}</span><div class="relative z-20" onclick="event.stopPropagation()">${linkButtonHtml}</div></div><div class="relative w-12 h-6 rounded-full switch-bg flex-shrink-0 mt-1"><div class="absolute w-5 h-5 bg-white rounded-full shadow top-0.5 left-0.5 switch-dot"></div></div></label></div>`;
-        clinicalTogglesEl.insertAdjacentHTML('beforeend', html);
-      });
-      ['renal', 'liver', 'pregnancy', 'surgery', 'seizure', '6months'].forEach(id => {
-          const el = document.getElementById(`check-${id}`);
-          if (el) el.checked = loadState(id) === 'true';
-      });
-    }
-
-    window.closeModalOutside = (e) => { if (e.target.id === 'modal-overlay') e.target.style.display = 'none'; };
-
-    window.onload = function() {
-      renderToggles();
-      ['age', 'weight', 'height'].forEach(id => {
-          const el = document.getElementById(`input-${id}`);
-          if (el && loadState(id)) el.value = loadState(id);
-          el?.addEventListener('input', () => { saveState(id, el.value); calculateScore(); });
-      });
-      calculateScore();
+    window.openAssessment = (type) => {
+        const m = document.getElementById('drug-checker-modal'), body = document.getElementById('modal-body'), title = document.getElementById('modal-title');
+        m.style.display = 'flex';
+        if (type === 'toxicity') {
+            title.textContent = 'ADR & Toxicity';
+            body.innerHTML = `<select id="as" class="w-full p-3 bg-gray-50 border rounded-lg font-bold outline-none"><option value="">-- Select --</option>${ASM_OPTIONS.map(d=>`<option value="${d}">${d}</option>`).join('')}</select><div id="tr" class="p-4 bg-blue-50 rounded-lg mt-4 hidden"></div>`;
+            document.getElementById('as').onchange = (e) => { const d = ASM_ADR_TOXICITY[e.target.value]; document.getElementById('tr').classList.remove('hidden'); document.getElementById('tr').innerHTML = `<p class="text-xs"><strong>ADR:</strong> ${d.adr}</p><p class="text-xs mt-2"><strong>Toxicity:</strong> ${d.toxicity}</p>`; };
+        } else if (type === 'compliance') {
+            title.textContent = 'Adherence Checklist';
+            body.innerHTML = `<div class="text-center text-[10px] text-gray-400 mb-2 uppercase font-bold">1pt for every "No"</div><div id="cq"></div><button id="calc-c" class="w-full bg-indigo-600 text-white py-3 rounded-xl mt-4 font-bold">Score</button><div id="cr"></div>`;
+            const qs = ["Missed dose in past month?", "Forgotten dose in past month?", "Stopped because felt well?", "Reduced due to side effects?", "Uncertain about timing?", "Late to refill?", "Rely on others?", "Trouble managing schedule?"];
+            document.getElementById('cq').innerHTML = qs.map((q,i)=>`<div class="compliance-card"><p class="text-sm font-medium mb-2">${i+1}. ${q}</p><label class="mr-4 text-red-600 font-bold"><input type="radio" name="r${i}" value="0"> Yes</label><label class="text-green-600 font-bold"><input type="radio" name="r${i}" value="1"> No</label></div>`).join('');
+            document.getEleamentById('calc-c').onclick = () => { let s=0, c=0; for(let i=0;i<8;i++){ const r=document.querySelector(`input[name="r${i}"]:checked`); if(r){s+=parseInt(r.value); c++;} } if(c<8){ alert("Answer all 8."); return; } document.getElementById('cr').className="mt-4 p-4 rounded-xl bg-blue-50 border-2 border-dashed text-center font-bold"; document.getElementById('cr').innerHTML = `Score: ${s}/8<br>${s>=7?'High Compliance':(s>=5?'Moderate':'Poor')}`; };
+        } else if (type === 'interaction') {
+            title.textContent = 'Interactions';
+            body.innerHTML = `<input type="text" id="i2" placeholder="Search drug..." class="w-full p-3 border rounded-xl outline-none"><div class="mt-4 text-xs text-gray-400 italic">Manual lookup for interaction suspected.</div>`;
+        }
     };
 
-    window.handleToggleChange = handleToggleChange;
-    window.calculateScore = calculateScore;
-    window.openModal = openModal;
-    window.closeModal = closeModal;
-    window.updateToxicityResults = updateToxicityResults;
-    window.checkInteraction = checkInteraction;
-    window.openChatModal = openChatModal;
-    window.handleChatQuery = handleChatQuery;
+    window.onload = () => {
+        const ct = document.getElementById('clinical-toggles');
+        CRITERIA.forEach(c => {
+            const row = `<div class="flex justify-between items-start p-3 bg-white border rounded-xl shadow-sm"><div class="flex-1 mr-4"><span class="text-sm font-medium text-gray-700 block">${c.text}</span>${c.link ? `<button class="link-button text-xs pointer-events-auto" onclick="openAssessment('${c.link}')">Check ${c.link} &raquo;</button>` : ''}</div><input type="checkbox" id="check-${c.id}" class="toggle-checkbox"><label for="check-${c.id}" class="w-12 h-6 rounded-full switch-bg relative cursor-pointer mt-1"><div class="absolute w-5 h-5 bg-white rounded-full shadow top-0.5 left-0.5 switch-dot"></div></label></div>`;
+            ct.insertAdjacentHTML('beforeend', row);
+        });
+        
+        // Event Listeners for Buttons (Fixes the "Unclickable" issue)
+        document.getElementById('main-ai-btn').onclick = () => document.getElementById('epilepsy-chatbot-modal').style.display='flex';
+        document.getElementById('close-chat-btn').onclick = () => document.getElementById('epilepsy-chatbot-modal').style.display='none';
+        document.getElementById('close-checker-btn').onclick = () => document.getElementById('drug-checker-modal').style.display='none';
+        document.getElementById('chat-form').onsubmit = (e) => { e.preventDefault(); handleChat(); };
+
+        // Attach Scoring listeners
+        document.querySelectorAll('input').forEach(i => i.addEventListener('input', calculateScore));
+        calculateScore();
+    };
+
+    window.handleToggleChange = calculateScore; // Map to global for any leftover inline calls
   </script>
 </body>
 </html>

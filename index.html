@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -98,22 +99,23 @@
         to { transform: scale(1); opacity: 1; }
     }
 
-    /* --- IMPROVED DISABLED STATE --- */
+    /* --- UNIFORM DISABLED STATE --- */
+    /* Prevents interaction but keeps text readable (dimmed) */
     .disabled-area {
         pointer-events: none;
     }
+    
+    /* Target only text elements and icons for dimming, not the containers themselves */
     .disabled-area h2,
     .disabled-area .input-group,
-    .disabled-area #comorbidity-toggles,
-    .disabled-area #special-population-check,
     .disabled-area .switch-bg,
     .disabled-area span:not(.link-button),
     .disabled-area p:not(.link-button) {
-        opacity: 0.4;
+        opacity: 0.45;
         filter: grayscale(100%);
     }
 
-    /* Vibrant Blue Link Buttons */
+    /* Vibrant Blue Link Buttons - Always bright and clickable */
     .link-button {
         color: #2563eb !important; /* Blue-600 */
         opacity: 1 !important;
@@ -149,12 +151,12 @@
   <div id="app" class="max-w-md mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden mb-10">
     
     <header class="p-6 bg-indigo-700 text-white relative overflow-hidden">
-      <div class="relative z-10">
-        <h1 class="text-2xl font-extrabold text-center tracking-tight">EPILEPSY EZ CHECK</h1>
-        <p class="text-sm text-center mt-1 text-indigo-100 font-medium">
+      <div class="relative z-10 text-center">
+        <h1 class="text-2xl font-extrabold tracking-tight uppercase">Epilepsy EZ Check</h1>
+        <p class="text-sm mt-1 text-indigo-100 font-medium">
             TDM Indication Score Calculator
         </p>
-        <p class="text-xs text-center mt-1 opacity-60 tracking-widest">
+        <p class="text-[10px] mt-1 opacity-60 tracking-widest font-bold uppercase">
             JKWPKL&P
         </p>
       </div>
@@ -162,15 +164,15 @@
     </header>
 
     <div class="p-4 mx-6 mt-6 rounded-lg">
-        <p class="text-xs italic text-gray-500 text-center">
+        <p class="text-[11px] italic text-gray-500 text-center">
             This tool is meant to support, not replace, clinical judgment.
         </p>
     </div>
 
     <main class="p-6 space-y-6">
         
-      <h2 class="text-lg font-bold text-indigo-700 border-b pb-2 mb-2 flex items-center gap-2">
-          SEIZURE HISTORY
+      <h2 class="text-lg font-bold text-indigo-700 border-b pb-2 mb-2 uppercase flex items-center gap-2">
+          Seizure History
       </h2>
       <div id="seizure-history-gate" class="space-y-3 p-3 border border-gray-200 rounded-xl bg-white shadow-sm">
         <div class="relative w-full">
@@ -195,38 +197,37 @@
       </div>
       
       <div id="calculator-core" class="transition-opacity duration-300">
-          <h2 class="text-lg font-bold text-indigo-700 border-b pb-2 mb-4 mt-6">1. Demographics & BMI</h2>
-          <div class="grid grid-cols-2 gap-4">
+          <h2 class="text-lg font-bold text-indigo-700 border-b pb-2 mb-4 mt-6 uppercase">1. Demographics & BMI</h2>
+          <div class="space-y-4">
             <div class="input-group">
-              <label for="input-age" class="block text-xs font-bold uppercase text-gray-500 mb-1">Age</label>
+              <label for="input-age" class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Age</label>
               <div class="flex items-center bg-gray-50 rounded-lg border border-gray-200 input-wrapper">
-                <input type="number" id="input-age" min="0" max="150" placeholder="0" class="input-field" oninput="calculateScore()">
+                <input type="number" id="input-age" placeholder="0" class="input-field" oninput="calculateScore()">
                 <span class="mr-3 text-gray-400 font-medium text-xs">yr</span>
               </div>
             </div>
             <div class="input-group">
-              <label for="input-weight" class="block text-xs font-bold uppercase text-gray-500 mb-1">Weight</label>
+              <label for="input-weight" class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Weight</label>
               <div class="flex items-center bg-gray-50 rounded-lg border border-gray-200 input-wrapper">
-                <input type="number" id="input-weight" min="1" step="0.1" placeholder="0.0" class="input-field" oninput="calculateScore()">
+                <input type="number" id="input-weight" placeholder="0.0" class="input-field" oninput="calculateScore()">
                 <span class="mr-3 text-gray-400 font-medium text-xs">kg</span>
               </div>
             </div>
             <div class="input-group">
-              <label for="input-height" class="block text-xs font-bold uppercase text-gray-500 mb-1">Height</label>
+              <label for="input-height" class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Height</label>
               <div class="flex items-center bg-gray-50 rounded-lg border border-gray-200 input-wrapper">
-                <input type="number" id="input-height" min="0.1" step="0.01" placeholder="0.00" class="input-field" oninput="calculateScore()">
+                <input type="number" id="input-height" placeholder="0.00" class="input-field" oninput="calculateScore()">
                 <span class="mr-3 text-gray-400 font-medium text-xs">m</span>
               </div>
             </div>
           </div>
 
-          <div class="mt-4 p-4 rounded-xl text-center bg-indigo-50 border border-indigo-200 shadow-sm">
-              <p class="text-xs font-bold text-indigo-400 uppercase tracking-widest">BMI (kg/m²)</p>
-              <p id="calculated-bmi" class="text-3xl font-black text-gray-300 mt-1">--</p>
-              <p id="bmi-status" class="text-xs font-bold mt-1 text-gray-400 h-4"></p>
+          <div class="mt-4 p-3 rounded-xl text-center bg-gray-50 border border-gray-200 mb-6 status-box">
+              <p id="calculated-bmi" class="text-2xl font-black text-gray-300 mt-1">--</p>
+              <p id="bmi-status" class="text-[10px] font-bold mt-1 text-gray-400 h-4 uppercase"></p>
           </div>
 
-          <h2 class="text-lg font-bold text-indigo-700 border-b pb-2 mb-4 mt-6">2. Comorbidities</h2>
+          <h2 class="text-lg font-bold text-indigo-700 border-b pb-2 mb-4 mt-6 uppercase">2. Comorbidities</h2>
           <div id="comorbidity-toggles" class="space-y-3">
             <div class="relative w-full bg-white border rounded-xl shadow-sm p-3">
                 <input type="checkbox" id="check-renal" class="toggle-checkbox" onchange="handleToggleChange('renal')">
@@ -266,18 +267,18 @@
             </div>
           </div>
           
-          <h2 class="text-lg font-bold text-indigo-700 border-b pb-2 pt-6 mb-4">3. Special Population</h2>
+          <h2 class="text-lg font-bold text-indigo-700 border-b pb-2 pt-6 mb-4 uppercase">3. Special Populations</h2>
           <div id="special-population-check" class="space-y-3">
-            <div class="p-3 rounded-xl shadow-sm border border-gray-200 bg-gray-50" id="age-child-pop-box">
+            <div class="p-3 rounded-xl shadow-sm border border-gray-200 bg-gray-50 status-box" id="age-child-pop-box">
                 <div class="flex justify-between items-center">
-                    <p class="text-sm font-medium text-gray-700">Children (&lt;20 yr)</p>
-                    <p id="age-child-pop-status" class="text-xs font-black text-gray-400">NOT MET</p>
+                    <p class="text-sm font-medium text-gray-700">Children/adolescent (&lt;20)</p>
+                    <p id="age-child-pop-status" class="text-[10px] font-black text-gray-400 uppercase">NOT MET</p>
                 </div>
             </div>
-            <div class="p-3 rounded-xl shadow-sm border border-gray-200 bg-gray-50" id="age-geriatric-pop-box">
+            <div class="p-3 rounded-xl shadow-sm border border-gray-200 bg-gray-50 status-box" id="age-geriatric-pop-box">
                 <div class="flex justify-between items-center">
                     <p class="text-sm font-medium text-gray-700">Elderly (&ge;65 yr)</p>
-                    <p id="age-geriatric-pop-status" class="text-xs font-black text-gray-400">NOT MET</p>
+                    <p id="age-geriatric-pop-status" class="text-[10px] font-black text-gray-400 uppercase">NOT MET</p>
                 </div>
             </div>
             <div class="relative w-full bg-white border rounded-xl shadow-sm p-3">
@@ -300,34 +301,33 @@
             </div>
           </div>
 
-          <h2 class="text-lg font-bold text-indigo-700 border-b pb-2 pt-6 mb-4">4. Clinical Factors</h2>
+          <h2 class="text-lg font-bold text-indigo-700 border-b pb-2 pt-6 mb-4 uppercase">4. Clinical Factors</h2>
           <div id="clinical-toggles" class="space-y-3"></div>
       </div> 
 
-      <button id="open-chatbot-btn" onclick="openChatModal()" class="w-full mt-6 py-3 px-4 bg-green-600 text-white font-bold rounded-xl shadow-md hover:bg-green-700 transition duration-150 flex items-center justify-center space-x-2">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+      <button id="open-chatbot-btn" onclick="openModal('chat')" class="w-full mt-4 py-4 bg-green-600 text-white font-bold rounded-2xl shadow-lg hover:bg-green-700 transition flex items-center justify-center space-x-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
         <span>Ask the Epilepsy AI</span>
       </button>
 
     </main>
 
-    <footer id="score-footer" class="p-6 bg-gray-50 border-t border-gray-200">
+    <footer id="score-footer" class="p-6 bg-indigo-50 border-t border-indigo-100 text-center">
       <div class="text-center">
-        <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Total Positive Criteria</p>
+        <p class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Total Criteria Met</p>
         <div id="final-score" class="text-6xl font-black text-gray-300 mt-1 transition-colors duration-300">
           0
         </div>
       </div>
       
       <div id="indication-box" class="mt-4 p-4 rounded-xl text-center shadow-lg transition-all duration-300 bg-gray-200 text-gray-500">
-        <p class="text-xs font-bold uppercase tracking-wider mb-1">Status</p>
-        <p id="indication-text" class="text-xl font-extrabold">NO INDICATION</p>
+        <p id="indication-text" class="text-xl font-extrabold uppercase">NO INDICATION</p>
       </div>
 
       <div class="flex justify-end items-end text-xs text-gray-400 mt-6 border-t pt-4">
           <div class="text-right">
               <p>&copy; JKWPKL&P 2025</p>
-              <p class="text-[10px] opacity-70">v2.1 Stable</p>
+              <p class="text-[9px] opacity-70">v2.5 Final Stable</p>
           </div>
       </div>
     </footer>
@@ -349,21 +349,21 @@
     <div id="epilepsy-chatbot-modal" class="modal-overlay" onclick="closeModal(event, 'epilepsy-chatbot-modal')">
         <div class="modal-content shadow-2xl max-w-lg">
             <div class="flex justify-between items-center border-b pb-3 mb-4">
-                <h3 class="text-xl font-bold text-indigo-700">Epilepsy Reference Chatbot</h3>
+                <h3 class="text-xl font-bold text-indigo-700">Epilepsy AI Reference</h3>
                 <button onclick="document.getElementById('epilepsy-chatbot-modal').style.display='none';" class="text-gray-400 hover:text-red-500 text-3xl font-light leading-none focus:outline-none">
                     &times;
                 </button>
             </div>
             <div id="chat-container" class="h-96 flex flex-col justify-between">
-                <div id="chat-history" class="overflow-y-auto p-2 space-y-3 flex-1 mb-4 border rounded-lg bg-gray-50">
-                    <div class="text-sm text-gray-500 text-center p-2">
-                        Ask me anything about Epilepsy Management or TDM using the linked Malaysian guidelines.
+                <div id="chat-history" class="overflow-y-auto p-4 bg-slate-50 border rounded-xl mb-3 space-y-3 flex flex-col text-xs">
+                    <div class="bg-indigo-100 text-indigo-800 p-2 rounded-lg text-xs self-start max-w-[85%]">
+                        Hi, ask me about epilepsy management in malaysia
                     </div>
                 </div>
                 <form id="chat-form" class="flex space-x-2" onsubmit="event.preventDefault(); handleChatQuery()">
                     <input type="text" id="chat-input" placeholder="Ask a question..." class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 outline-none">
-                    <button type="submit" id="chat-send-btn" class="bg-indigo-600 text-white p-3 rounded-lg hover:bg-indigo-700 disabled:bg-gray-400">
-                        Send
+                    <button type="submit" id="chat-send-btn" class="bg-indigo-600 text-white px-4 rounded-xl font-bold">
+                        Ask
                     </button>
                 </form>
             </div>
@@ -373,10 +373,10 @@
   </div>
 
   <script type="module">
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'epilepsy-ez-check-app';
+    // --- !!! PASTE YOUR API KEY (STARTING WITH AIzaSy) BETWEEN THE QUOTES BELOW !!! ---
     const apiKey = "AIzaSyAJ_-0ppdXtWD40j0zWp2mfJG8DlUh8YR8"; 
-    const GEMINI_MODEL = 'gemini-2.5-flash-preview-09-2025'; 
-    const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+    const GEMINI_MODEL = 'gemini-1.5-flash'; 
+    const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${AIzaSyAJ_-0ppdXtWD40j0zWp2mfJG8DlUh8YR8}`;
 
     const ASM_OPTIONS = ["VALPROIC ACID", "CARBAMAZEPINE", "PHENYTOIN", "PHENOBARBITONE"];
 
@@ -398,7 +398,7 @@
 
     const ASM_INTERACTIONS = {
         "VALPROIC ACID": { "increased_by": ["Cimetidine", "Chlorpromazine", "Felbamate", "Topiramate"], "decreased_by": ["Carbamazepine", "Carbapenem", "Lamotrigine", "Phenytoin", "Phenobarbitone", "Primidone", "Rifampicin"] },
-        "PHENYTOIN": { "increased_by": ["Allopurinol", "Amiodarone", "Azole derivatives", "Calcium Channel Blocker", "Carbamazepine", "Cefazolin", "Chloramphenicol", "Fluoxetine", "Fluvoxamine", "Vitamin K Antagonist", "Hydroxyzine", "Isoniazid", "Proton Pump Inhibitors", "Serotonin Reuptake Inhibitors", "Sulfonamide Derivatives", "Tacrolimus", "Ticlopidine", "Topiramate", "Trimethoprim"], "decreased_by": ["Carbamazepine", "Ciprofloxacin", "Folic Acid", "Methotrexate", "Pyridoxine", "Rifampin", "Ritonavir z", "Theophylline", "Valproic Acid"] },
+        "PHENYTOIN": { "increased_by": ["Allopurinol", "Amiodarone", "Azole derivatives", "Calcium Channel Blocker", "Carbamazepine", "Cefazolin", "Chloramphenicol", "Fluoxetine", "Fluvoxamine", "Vitamin K Antagonist", "Hydroxyzine", "Isoniazid", "Proton Pump Inhibitors", "Serotonheavy Inhibitors", "Sulfonamide Derivatives", "Tacrolimus", "Ticlopidine", "Topiramate", "Trimethoprim"], "decreased_by": ["Carbamazepine", "Ciprofloxacin", "Folic Acid", "Methotrexate", "Pyridoxine", "Rifampin", "Ritonavir z", "Theophylline", "Valproic Acid"] },
         "PHENOBARBITONE": { "increased_by": ["Carbonic Anhydrase inhibitor", "Chloramphenicol", "Clarithromycin", "Hydroxyzine", "Magnesium Sulphate", "Methylphenidate", "Phenytoin", "Primidone", "Quinine", "Valproic Acid and Derivative"], "decreased_by": ["Amphetamine", "Cholestyramine Resin", "Folic Acid", "Ketorolac", "Leucovorin Calcium", "Mefloquine", "Multivitamins/ Minerals", "Orlistat", "Pyridoxine", "Rifamycin derivative", "Tipranavir"] },
         "CARBAMAZEPINE": { "increased_by": ["Clarithromycin", "Diltiazem", "Erythromycin", "Fluoxetine", "Grapefruit juice", "Isoniazid", "Loratadine", "Valproate", "Verapamil", "Azole antifungals", "Fluconazole, Itraconazole, Ketoconazole", "Protease inhibitors: Indinavir, Nelfinavir, Ritonavir"], "decreased_by": ["Cisplatin", "Doxorubicin", "Phenobarbital", "Phenytoin", "Primidone", "Rifampicin", "Theophylline", "Carbamazepine (autoinduction)"] }
     };
@@ -431,11 +431,10 @@
     function displayMessage(sender, text) {
         const history = document.getElementById('chat-history');
         const isUser = sender === 'user';
-        const msgClass = isUser ? 'text-right' : 'text-left';
-        const bubbleClass = isUser ? 'bg-indigo-500 text-white ml-auto' : 'bg-white text-gray-800 mr-auto shadow';
+        const bubbleClass = isUser ? 'bg-indigo-600 text-white self-end' : 'bg-gray-200 text-gray-800 self-start';
         const messageDiv = document.createElement('div');
-        messageDiv.className = msgClass;
-        messageDiv.innerHTML = `<span class="${bubbleClass} inline-block px-4 py-2 rounded-xl max-w-[80%] text-sm">${text}</span>`;
+        messageDiv.className = `${bubbleClass} p-2 rounded-lg text-xs max-w-[85%] mb-2`;
+        messageDiv.textContent = text;
         history.appendChild(messageDiv);
         history.scrollTop = history.scrollHeight;
     }
@@ -444,7 +443,7 @@
         document.getElementById('epilepsy-chatbot-modal').style.display = 'flex';
         const history = document.getElementById('chat-history');
         if (history.children.length > 1) {
-            history.innerHTML = `<div class="text-sm text-gray-500 text-center p-2">Ask me anything about Epilepsy Management or TDM using the linked Malaysian guidelines.</div>`;
+            history.innerHTML = `<div class="bg-indigo-100 text-indigo-800 p-2 rounded-lg text-xs self-start max-w-[85%]">Hi, ask me about epilepsy management in malaysia</div>`;
         }
     }
     
@@ -454,7 +453,7 @@
                 const response = await fetch(url, options);
                 if (response.ok) return response;
                 if (response.status >= 400 && response.status < 500) throw new Error(`Client Error: ${response.status}`);
-                const delay = Math.pow(2, i) * 1000; 
+                const delay = Math.pow(2, i) * 1000; 
                 await new Promise(resolve => setTimeout(resolve, delay));
             } catch (error) { if (i === retries - 1) throw error; }
         }
@@ -467,21 +466,46 @@
         const sendBtn = document.getElementById('chat-send-btn');
         const history = document.getElementById('chat-history');
         if (!query) return;
+        
+        if (!apiKey) {
+            const errDiv = document.createElement('div');
+            errDiv.className = "text-red-600 font-bold p-2 bg-red-50 rounded text-[10px]";
+            errDiv.textContent = "Error: Missing Key. Paste your key in Line 229.";
+            history.appendChild(errDiv);
+            return;
+        }
+
         displayMessage('user', query);
         input.value = '';
         sendBtn.disabled = true;
-        const loadingId = 'loading-msg';
-        displayMessage('ai', `<div id="${loadingId}" class="flex items-center justify-center space-x-1"><svg class="animate-spin h-4 w-4 text-indigo-500" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#a5b4fc" stroke-width="4" fill="none"></circle><path d="M12 2v4M12 18v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M3 12h4M17 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83" stroke="#4f46e5" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Thinking...</span></div>`);
+        
+        const loading = document.createElement('div');
+        loading.className = "text-gray-400 italic mb-2 text-[10px]";
+        loading.textContent = "Thinking...";
+        history.appendChild(loading);
+        history.scrollTop = history.scrollHeight;
+
         try {
-            const systemPrompt = `You are a Clinical Pharmacist Assistant for epilepsy management. Base all your responses STRICTLY on the Malaysian Consensus Guidelines and Pharmacokinetics Handbook. ${TDM_GUIDE_CONTENT} Your final answer MUST be simple and concise. DO NOT include any references.`;
-            const payload = { contents: [{ parts: [{ text: query }] }], tools: [{ "google_search": {} }], systemInstruction: { parts: [{ text: systemPrompt }] } };
+            const systemPrompt = `You are a friendly, knowledgeable Clinical Pharmacist Assistant specializing in epilepsy management. Provide simple, plain text answers based strictly on the Malaysian Consensus Guidelines and Pharmacokinetics Handbook. 
+            CRITICAL: DO NOT use markdown, DO NOT use asterisks (*), DO NOT use bolding (**), and DO NOT use bullet points or lists. 
+            Use only simple, natural sentences. ${TDM_GUIDE_CONTENT} 
+            Your final answer MUST be plain text only. No references or citations.`;
+            
+            const payload = { contents: [{ parts: [{ text: query }] }], systemInstruction: { parts: [{ text: systemPrompt }] } };
             const response = await retryFetch(GEMINI_API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }, 3);
             const result = await response.json();
-            const text = result.candidates?.[0]?.content?.parts?.[0]?.text || "I was unable to retrieve an answer.";
-            document.getElementById(loadingId)?.closest('.text-left')?.remove();
-            displayMessage('ai', text);
+            loading.remove();
+            
+            if (result.error) {
+                displayMessage('ai', `Error: ${result.error.message}`);
+            } else {
+                let text = result.candidates?.[0]?.content?.parts?.[0]?.text || "I was unable to retrieve an answer.";
+                // Extra security: remove any markdown symbols
+                const cleanText = text.replace(/\*/g, '');
+                displayMessage('ai', cleanText);
+            }
         } catch (error) {
-            document.getElementById(loadingId)?.closest('.text-left')?.remove();
+            loading.remove();
             displayMessage('ai', `Error lookup: ${error.message}`);
         } finally { sendBtn.disabled = false; }
     }
@@ -494,11 +518,11 @@
         if (type === 'toxicity') {
             modalTitle.textContent = 'ASM ADR & Toxicity Checker';
             const options = ASM_OPTIONS.map(d => `<option value="${d}">${d}</option>`).join('');
-            modalBody.innerHTML = `<div class="space-y-4"><label class="block text-sm font-bold text-gray-700">Select Medication</label><select id="asm-select" class="w-full p-3 bg-gray-50 border rounded-lg outline-none focus:ring-2 ring-indigo-500" onchange="updateToxicityResults(this.value)"><option value="">-- Select --</option>${options}</select><div id="tox-res" class="p-4 bg-gray-50 rounded-lg text-sm text-gray-500 text-center min-h-[100px] flex items-center justify-center">Select a drug above.</div></div>`;
+            modalBody.innerHTML = `<div class="space-y-4"><label class="block text-sm font-bold text-gray-700">Select Medication</label><select id="asm-select" class="w-full p-3 bg-gray-50 border rounded-lg outline-none focus:ring-2 ring-indigo-500 font-bold text-indigo-900" onchange="updateToxicityResults(this.value)"><option value="">-- Select --</option>${options}</select><div id="tox-res" class="p-4 bg-blue-50 rounded-lg text-sm text-gray-500 text-center min-h-[100px] flex items-center justify-center hidden"></div></div>`;
         } else if (type === 'interaction') {
             modalTitle.textContent = 'Interaction Checker';
             const options = ASM_OPTIONS.map(d => `<option value="${d}">${d}</option>`).join('');
-            modalBody.innerHTML = `<div class="space-y-4"><div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Index Drug (ASM)</label><select id="asm1" class="w-full p-3 bg-gray-50 border rounded-lg outline-none focus:ring-2 ring-indigo-500" onchange="checkInteraction()"><option value="">-- Select --</option>${options}</select></div><div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Interacting Drug</label><input id="drug2" type="text" placeholder="e.g. Rifampicin" class="w-full p-3 bg-gray-50 border rounded-lg outline-none focus:ring-2 ring-indigo-500" oninput="checkInteraction()"></div><div id="int-res" class="p-4 bg-gray-50 rounded-lg text-sm text-gray-500 text-center">Select an ASM and type a second drug.</div></div>`;
+            modalBody.innerHTML = `<div class="space-y-4"><div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Index Drug (ASM)</label><select id="asm1" class="w-full p-3 bg-gray-50 border rounded-lg outline-none focus:ring-2 ring-indigo-500 font-bold text-indigo-900" onchange="checkInteraction()"><option value="">-- Select --</option>${options}</select></div><div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Interacting Drug</label><input id="drug2" type="text" placeholder="e.g. Rifampicin" class="w-full p-3 bg-gray-50 border rounded-lg outline-none focus:ring-2 ring-indigo-500" oninput="checkInteraction()"></div><div id="int-res" class="p-4 bg-gray-50 rounded-lg text-sm text-gray-500 text-center text-xs">Select an ASM and type a second drug.</div></div>`;
         } else if (type === 'compliance') {
             modalTitle.textContent = 'ASM Adherence Checklist';
             let qHtml = COMPLIANCE_QUESTIONS.map((q, i) => `
@@ -512,16 +536,18 @@
             
             modalBody.innerHTML = `
                 <div class="space-y-2">
-                    <p class="text-xs text-gray-500 mb-4 italic text-center">Score 1 point for every "No" response. Total score out of 8.</p>
+                    <p class="text-[10px] text-gray-400 mb-4 font-bold text-center tracking-widest uppercase">Score 1 point for every "No" response</p>
                     ${qHtml}
-                    <button onclick="calculateComplianceScore()" class="w-full mt-4 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition">Calculate Score</button>
+                    <button onclick="calculateComplianceScore()" class="w-full mt-4 py-4 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition shadow-md text-sm">Calculate Result</button>
                     <div id="comp-res" class="hidden"></div>
                 </div>`;
+        } else if (type === 'chat') {
+            openChatModal();
+            return;
         }
         modal.style.display = 'flex';
     }
 
-    // Exported for the global scope to handle button click in modal
     window.calculateComplianceScore = function() {
         let score = 0;
         let answeredCount = 0;
@@ -530,28 +556,22 @@
             if (sel) { score += parseInt(sel.value); answeredCount++; }
         });
 
+        const res = document.getElementById('comp-res');
+        res.classList.remove('hidden');
+
         if (answeredCount < 8) {
-            const res = document.getElementById('comp-res');
-            res.className = "mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm font-bold text-center";
+            res.className = "mt-4 p-4 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm font-bold text-center";
             res.textContent = "Please answer all 8 questions.";
-            res.classList.remove('hidden');
             return;
         }
 
-        let grade = '', color = '', advice = '';
-        if (score >= 7) { grade = 'High Compliance'; color = 'border-green-500 text-green-600'; advice = 'Excellent adherence! Keep up the consistent medication use.'; }
-        else if (score >= 5) { grade = 'Moderate Compliance'; color = 'border-yellow-500 text-yellow-600'; advice = 'Occasional lapses can increase seizure risk. Focus on improving consistency.'; }
-        else { grade = 'Poor Compliance'; color = 'border-red-500 text-red-600'; advice = 'Non-adherence is dangerous. Please contact your neurologist or pharmacist immediately.'; }
+        let grade = '', color = '';
+        if (score >= 7) { grade = 'High Compliance'; color = 'bg-green-50 border-green-400 text-green-700'; }
+        else if (score >= 5) { grade = 'Moderate Compliance'; color = 'bg-yellow-50 border-yellow-400 text-yellow-700'; }
+        else { grade = 'Poor Compliance'; color = 'bg-red-50 border-red-400 text-red-700'; }
 
-        const res = document.getElementById('comp-res');
-        res.className = `score-box-adherence ${color.split(' ')[0]} border-4 border-dashed bg-gray-50`;
-        res.innerHTML = `
-            <h4 class="text-lg font-bold text-gray-800 mb-1">Assessment Result</h4>
-            <div class="text-3xl font-black ${color.split(' ')[1]} mb-2">${score} / 8</div>
-            <p class="text-sm font-bold ${color.split(' ')[1]} uppercase tracking-wider mb-2">${grade}</p>
-            <p class="text-xs text-gray-600 leading-relaxed">${advice}</p>
-        `;
-        res.classList.remove('hidden');
+        res.className = `score-box-adherence ${color} border-2 border-dashed mt-4 p-4 rounded-xl font-bold text-center`;
+        res.innerHTML = `Result: ${score}/8<br><span class="uppercase text-sm">${grade}</span>`;
         res.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
@@ -562,9 +582,10 @@
 
     function updateToxicityResults(val) {
         const el = document.getElementById('tox-res');
-        if(!val || !ASM_ADR_TOXICITY[val]) { el.innerHTML = "Select a drug above."; return; }
+        if(!val || !ASM_ADR_TOXICITY[val]) { el.classList.add('hidden'); return; }
         const d = ASM_ADR_TOXICITY[val];
-        el.innerHTML = `<div class="text-left space-y-3"><div><span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs font-bold">ADR</span> <p class="mt-1 text-gray-800">${d.adr}</p></div><div><span class="bg-orange-100 text-orange-800 px-2 py-1 rounded text-xs font-bold">TOXICITY</span> <p class="mt-1 text-gray-800">${d.toxicity}</p></div></div>`;
+        el.classList.remove('hidden');
+        el.innerHTML = `<div class="text-left space-y-3"><div><span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs font-bold">ADR</span> <p class="mt-1 text-gray-800 text-xs">${d.adr}</p></div><div><span class="bg-orange-100 text-orange-800 px-2 py-1 rounded text-xs font-bold">TOXICITY</span> <p class="mt-1 text-gray-800 text-xs">${d.toxicity}</p></div></div>`;
     }
 
     function checkInteraction() {
@@ -577,35 +598,93 @@
         data.increased_by.forEach(x => { if(d2.includes(x.toUpperCase()) || x.toUpperCase().includes(d2)) hits.push({type: 'INCREASE', drug: x}); });
         data.decreased_by.forEach(x => { if(d2.includes(x.toUpperCase()) || x.toUpperCase().includes(d2)) hits.push({type: 'DECREASE', drug: x}); });
         if(hits.length === 0) {
-            el.className = "p-4 bg-green-50 border border-green-200 rounded-lg text-center";
-            el.innerHTML = `<p class="text-green-700 font-bold">No major interaction found</p><p class="text-xs text-green-600 mt-1">Between ${asm} and ${d2}</p>`;
+            el.className = "p-4 bg-green-50 border border-green-200 rounded-lg text-center text-xs";
+            el.innerHTML = `<p class="text-green-700 font-bold">No major interaction found</p><p class="text-[10px] text-green-600 mt-1">Between ${asm} and ${d2}</p>`;
         } else {
-            el.className = "p-4 bg-red-50 border border-red-200 rounded-lg text-left";
-            el.innerHTML = hits.map(h => `<div class="mb-2 last:mb-0"><p class="font-bold text-red-700">⚠️ INTERACTION FOUND</p><p class="text-sm text-red-600 mt-1"><strong>${h.drug}</strong> may <u>${h.type}</u> levels of ${asm}.</p></div>`).join('');
+            el.className = "p-4 bg-red-50 border border-red-200 rounded-lg text-left text-xs";
+            el.innerHTML = hits.map(h => `<div class="mb-2 last:mb-0"><p class="font-bold text-red-700">⚠️ INTERACTION FOUND</p><p class="text-xs text-red-600 mt-1"><strong>${h.drug}</strong> may <u>${h.type}</u> levels of ${asm}.</p></div>`).join('');
         }
     }
 
-    function setCoreInputsDisabled(isDisabled) {
-        const coreDiv = document.getElementById('calculator-core');
-        if (!coreDiv) return;
-        if (isDisabled) {
-            coreDiv.classList.add('disabled-area');
-            updateIndicationStatus(0, 'NO INDICATION (Prerequisite Failed)');
-        } else {
-            coreDiv.classList.remove('disabled-area');
-        }
-    }
+    function calculateScore() {
+      const checkSeizure = document.getElementById('check-seizure');
+      const check6Months = document.getElementById('check-6months');
+      const prerequisiteMet = checkSeizure?.checked && check6Months?.checked;
+      
+      const coreDiv = document.getElementById('calculator-core');
+      const scoreEl = document.getElementById('final-score');
+      const box = document.getElementById('indication-box');
+      const text = document.getElementById('indication-text');
 
-    function getCalculatedBMI() {
-        const weight = parseFloat(document.getElementById('input-weight').value);
-        const height = parseFloat(document.getElementById('input-height').value);
-        const calculatedBmiEl = document.getElementById('calculated-bmi');
-        let calculatedBMI = 0;
-        if (weight > 0 && height > 0) {
-            calculatedBMI = weight / (height * height);
-            calculatedBmiEl.textContent = calculatedBMI.toFixed(1);
-        } else { calculatedBmiEl.textContent = '--'; }
-        return calculatedBMI;
+      saveState('seizure', checkSeizure?.checked);
+      saveState('6months', check6Months?.checked);
+
+      if (!prerequisiteMet) { 
+          coreDiv.classList.add('disabled-area');
+          scoreEl.textContent = "0";
+          scoreEl.className = "text-6xl font-black text-gray-300 mt-1";
+          box.className = "mt-4 p-4 rounded-xl text-center shadow-lg bg-gray-200 text-gray-500";
+          text.textContent = "NO INDICATION";
+          return; 
+      }
+
+      coreDiv.classList.remove('disabled-area');
+      let score = 0;
+
+      const weight = parseFloat(document.getElementById('input-weight').value);
+      const height = parseFloat(document.getElementById('input-height').value);
+      const bmiEl = document.getElementById('calculated-bmi');
+      const bmiStatusEl = document.getElementById('bmi-status');
+      
+      if (weight > 0 && height > 0) {
+          const bmi = weight / (height * height);
+          bmiEl.textContent = bmi.toFixed(1);
+          if (bmi >= 27.5 || bmi <= 18.5) {
+              score++;
+              bmiEl.className = "text-2xl font-black text-red-600";
+              bmiStatusEl.textContent = bmi >= 27.5 ? 'OBESE' : 'LOW BMI';
+          } else {
+              bmiEl.className = "text-2xl font-black text-green-600";
+              bmiStatusEl.textContent = 'NORMAL';
+          }
+      } else { 
+          bmiEl.textContent = '--'; 
+          bmiEl.className = "text-2xl font-black text-gray-300";
+          bmiStatusEl.textContent = '';
+      }
+
+      const age = parseFloat(document.getElementById('input-age').value);
+      const isChild = age > 0 && age < 20;
+      const isGeriatric = age >= 65;
+      
+      const updateBox = (boxId, statusId, met) => {
+          const b = document.getElementById(boxId);
+          const s = document.getElementById(statusId);
+          if (met) { b.classList.replace('bg-gray-50', 'bg-green-50'); b.classList.replace('border-gray-200', 'border-green-300'); s.textContent = 'MET'; s.className = 'text-[10px] font-black text-green-600 uppercase'; }
+          else { b.classList.replace('bg-green-50', 'bg-gray-50'); b.classList.replace('border-green-300', 'border-gray-200'); s.textContent = 'NOT MET'; s.className = 'text-[10px] font-black text-gray-400 uppercase'; }
+      };
+      
+      updateBox('age-child-pop-box', 'age-child-pop-status', isChild);
+      updateBox('age-geriatric-pop-box', 'age-geriatric-pop-status', isGeriatric);
+
+      if (isChild) score++;
+      if (isGeriatric) score++;
+      if (document.getElementById('check-renal')?.checked) score++;
+      if (document.getElementById('check-liver')?.checked) score++;
+      if (document.getElementById('check-pregnancy')?.checked) score++;
+      if (document.getElementById('check-surgery')?.checked) score++;
+      CRITERIA_TOGGLES.forEach(item => { if (document.getElementById(`check-${item.id}`)?.checked) score++; });
+      
+      scoreEl.textContent = score;
+      if (score > 0) {
+          scoreEl.className = "text-6xl font-black text-indigo-600 mt-1";
+          box.className = "mt-4 p-4 rounded-xl text-center shadow-lg bg-indigo-600 text-white animate-pulse";
+          text.textContent = "TDM IS INDICATED";
+      } else {
+          scoreEl.className = "text-6xl font-black text-gray-300 mt-1";
+          box.className = "mt-4 p-4 rounded-xl text-center shadow-lg bg-gray-200 text-gray-500";
+          text.textContent = "NO INDICATION";
+      }
     }
 
     function handleToggleChange(id) {
@@ -625,65 +704,20 @@
         else if(item.link === 'interaction') linkLabel = 'Check Interaction';
         else if(item.link === 'compliance') linkLabel = 'Check Compliance';
 
-        const linkButtonHtml = item.link 
+        const linkButtonHtml = item.link 
             ? `<div class="mt-1 pointer-events-auto"><button class="link-button text-xs underline focus:outline-none" onclick="openModal('${item.link}')">${linkLabel} &raquo;</button></div>`
             : '';
 
         const html = `<div class="relative w-full bg-white border rounded-xl shadow-sm p-3"><input type="checkbox" id="check-${key}" class="toggle-checkbox" onchange="handleToggleChange('${key}')" ${isChecked ? 'checked' : ''}><label for="check-${key}" class="flex justify-between items-start w-full cursor-pointer select-none"><div class="flex-1 mr-4"><span class="text-sm font-medium text-gray-700 block">${item.text}</span><div class="relative z-20" onclick="event.stopPropagation()">${linkButtonHtml}</div></div><div class="relative w-12 h-6 rounded-full switch-bg flex-shrink-0 mt-1"><div class="absolute w-5 h-5 bg-white rounded-full shadow top-0.5 left-0.5 switch-dot"></div></div></label></div>`;
         clinicalTogglesEl.insertAdjacentHTML('beforeend', html);
       });
-      ['renal', 'liver', 'pregnancy', 'surgery', 'seizure', '6months', 'dm', 'htn'].forEach(id => {
+      ['renal', 'liver', 'pregnancy', 'surgery', 'seizure', '6months'].forEach(id => {
           const el = document.getElementById(`check-${id}`);
           if (el) el.checked = loadState(id) === 'true';
       });
     }
 
-    function calculateScore() {
-      const checkSeizure = document.getElementById('check-seizure');
-      const check6Months = document.getElementById('check-6months');
-      const prerequisiteMet = checkSeizure?.checked && check6Months?.checked;
-      saveState('seizure', checkSeizure?.checked);
-      saveState('6months', check6Months?.checked);
-      if (!prerequisiteMet) { setCoreInputsDisabled(true); return; }
-      setCoreInputsDisabled(false);
-      let score = 0;
-      const calculatedBMI = getCalculatedBMI();
-      let bmiStatus = '';
-      if (calculatedBMI > 0) {
-          if (calculatedBMI >= 27.5) { score += 1; bmiStatus = 'OBESE'; document.getElementById('calculated-bmi').className = "text-3xl font-black text-red-600 mt-1"; }
-          else if (calculatedBMI <= 18.5) { score += 1; bmiStatus = 'LOW BMI'; document.getElementById('calculated-bmi').className = "text-3xl font-black text-red-600 mt-1"; }
-          else { bmiStatus = 'NORMAL'; document.getElementById('calculated-bmi').className = "text-3xl font-black text-green-600 mt-1"; }
-      } else { bmiStatus = ''; document.getElementById('calculated-bmi').className = "text-3xl font-black text-gray-300 mt-1"; }
-      document.getElementById('bmi-status').textContent = bmiStatus;
-      if (document.getElementById('check-renal')?.checked) score++;
-      if (document.getElementById('check-liver')?.checked) score++;
-      let age = parseFloat(document.getElementById('input-age').value);
-      const isChild = age > 0 && age < 20;
-      const isGeriatric = age >= 65;
-      const updateBox = (box, txt, met) => {
-          if (met) { box.classList.remove('bg-gray-50', 'border-gray-200'); box.classList.add('bg-green-50', 'border-green-300'); txt.textContent = 'MET'; txt.classList.remove('text-gray-400'); txt.classList.add('text-green-600'); }
-          else { box.classList.add('bg-gray-50', 'border-gray-200'); box.classList.remove('bg-green-50', 'border-green-300'); txt.textContent = 'NOT MET'; txt.classList.add('text-gray-400'); txt.classList.remove('text-green-600'); }
-      };
-      updateBox(document.getElementById('age-child-pop-box'), document.getElementById('age-child-pop-status'), isChild);
-      updateBox(document.getElementById('age-geriatric-pop-box'), document.getElementById('age-geriatric-pop-status'), isGeriatric);
-      if (isChild) score++;
-      if (isGeriatric) score++;
-      if (document.getElementById('check-pregnancy')?.checked) score++;
-      if (document.getElementById('check-surgery')?.checked) score++;
-      CRITERIA_TOGGLES.forEach(item => { if (document.getElementById(`check-${item.id}`)?.checked) score++; });
-      updateIndicationStatus(score);
-    }
-
-    function updateIndicationStatus(score, textOverride) {
-        const scoreEl = document.getElementById('final-score');
-        const indicationBox = document.getElementById('indication-box');
-        const indicationText = document.getElementById('indication-text');
-        scoreEl.textContent = score;
-        scoreEl.className = score > 0 ? "text-6xl font-black text-indigo-600 mt-1" : "text-6xl font-black text-gray-300 mt-1";
-        if (textOverride) { indicationBox.className = "mt-4 p-4 rounded-xl text-center shadow-lg bg-gray-100 text-gray-400"; indicationText.textContent = textOverride; return; }
-        if (score > 0) { indicationBox.className = "mt-4 p-4 rounded-xl text-center shadow-lg bg-indigo-600 text-white"; indicationText.textContent = "TDM IS INDICATED"; }
-        else { indicationBox.className = "mt-4 p-4 rounded-xl text-center shadow-lg bg-gray-200 text-gray-500"; indicationText.textContent = "NO INDICATION"; }
-    }
+    window.closeModalOutside = (e) => { if (e.target.id === 'modal-overlay') e.target.style.display = 'none'; };
 
     window.onload = function() {
       renderToggles();
